@@ -5,5 +5,5 @@ var dataset = Analise.DataStructure([
     [9, 10, 11, 12]
 
 ], {
-    campos: ['nome', 'idade', 'A', 'B']
+    campos: ['campo1', 'campo2', 'campo3', 'campo4']
 });

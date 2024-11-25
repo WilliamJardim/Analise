@@ -82,13 +82,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	OU
 	ex: findSamples([
 		{fieldA: 'Idade', op: 'less', fieldB: '22'}
-
 	]);
 	
 	*/
 	context.findSamples = function(criterios, returnType='datastructure'){
 		const newArray = [];
-		const rawArray = [];
 
 		/*
 		Função interna que faz uma comparação logica SE
@@ -225,11 +223,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 			if( resultadosCriterios.every(function(resultCriterio){return resultCriterio == true}) ){
 				newArray.push( amostra );
-				rawArray.push( amostra.toJson() );
 			}
 		});
 
-		let returnObject;
+		let returnObject = newArray;
 
 		return returnObject;
 	}
@@ -254,10 +251,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			}
 		})
 
-		return new JeyCell.prototype.datastructure({
-			data: newArray,
-			columns: this.columns
-		});
+		return newArray;
 	}
 
 	//Metodos de matematica
