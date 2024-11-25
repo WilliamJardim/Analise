@@ -222,44 +222,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		});
 
 		let returnObject;
-		switch(returnType){
-			case 'datastructure':
-			case 'datastructure':
-				returnObject = new JeyCell.prototype.datastructure({
-					data: rawArray,
-					columns: this.columns
-				});
-				break;
-
-			case 'SeriesOfSeries':
-			case 'seriesofseries':
-				returnObject = new JeyCell.prototype.Series({
-					data: newArray
-				});
-				break;
-
-			case 'Series':
-			case 'SeriesOfJson':
-			case 'seriesofjson':
-			case 'SeriesOfObject':
-			case 'seriesofobject':
-				returnObject = new JeyCell.prototype.Series({
-					data: rawArray
-				});
-				break;
-
-			case 'ArraySeries':
-			case 'arrayseries':
-			case 'SeriesArray':
-			case 'seriesarray':
-				returnObject = newArray;
-				break;
-
-			case 'Array':
-			case 'array':
-				returnObject = rawArray;
-				break;
-		}
 
 		return returnObject;
 	}
