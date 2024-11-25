@@ -1,14 +1,13 @@
-class Base {
-    constructor( config={} ){
-        this.config = config;
-        this.copyParametros(config);
-    }
+Analise = {};
+
+Analise.Base = function( config ){
+    const context = Vectorization.Matrix(config);
 
     /**
     * Copia parametros para dentro da instancia desse objeto 
     * @param {JSON} parametros 
     */
-    copyParametros( parametros={} ){
+    context.copyParametros = function( parametros={} ){
         const chaves = Object.keys( parametros );
 
         for( let i = 0 ; i < chaves.length ; i++ )
@@ -20,4 +19,6 @@ class Base {
             this[ chaveAtual ] = valorChave;
         }
     }
+
+    return context;
 }

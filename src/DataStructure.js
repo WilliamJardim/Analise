@@ -1,6 +1,5 @@
-class DataStructure extends Base{
-    constructor( config={} ){
-        super(config);
-        this.config = config;
-    }
+Analise.DataStructure = function( config={} ){
+    const context = Analise.Base(config);
+
+    return context;
 }
