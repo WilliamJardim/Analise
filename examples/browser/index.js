@@ -1,0 +1,1 @@
+var dataset = Analise.DataStructure( datasetExemplo );
