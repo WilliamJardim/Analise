@@ -26,6 +26,14 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return context.mapaCampos[ nomeCampo ];
 	}
 
+	//Injeta uma função dentro de cada amostra
+	context.forEach(function(indice, vetorAmostra, contextoDataStructure){
+		vetorAmostra.getCampo = function( nomeCampo ){
+			return vetorAmostra.getIndice( contextoDataStructure.getIndiceCampo(nomeCampo) );
+		}
+	});
+
+
 	/**
 	* Obtém um Vectorization.Vector que contém os dados da coluna cujo nome é nomeCampo
 	*/
@@ -202,7 +210,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 
 		//Para cada amostra
-		this.forEach(function(amostra, indice, datastructure){
+		context.forEach(function(indice, amostra, datastructure){
 			
 			//Para cada criteio faz a validação
 			let resultadosCriterios = [];
