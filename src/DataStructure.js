@@ -77,6 +77,62 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
         return context.slice(linhaInicial, linhaFinal);
     }
 
+	//Cria uma nova coluna nesta Vectorization.Matrix
+	//OVERRIDE
+    context.adicionarColuna = function(valoresNovaColuna, nomeCampo=''){
+        //Consulta se a gravação/modificação de dados está bloqueada neste Vectorization.Matrix
+        if( context._isBloqueado() == true ){
+            throw 'Este Vectorization.Matrix está bloqueado para novas gravações!';
+        }
+
+        let isVetorVectorization = (
+            Vectorization.Vector.isVector(valoresNovaColuna || []) == true &&
+            Vectorization.Vector.isVectorizationVector(valoresNovaColuna || []) 
+        ) == true;
+           
+        let valoresNovaColuna_Vector = isVetorVectorization == true ? valoresNovaColuna : Vectorization.Vector(valoresNovaColuna || []);
+        let tamanhoVetorNovo = valoresNovaColuna_Vector.tamanho();
+        let quantidadeLinhasMatrix = context.getRows();
+
+        if( typeof valoresNovaColuna_Vector == 'object' &&
+            tamanhoVetorNovo == quantidadeLinhasMatrix
+        ){
+            //Para cada linha
+            Vectorization.Vector({
+                valorPreencher: 1,
+                elementos: quantidadeLinhasMatrix
+
+            }).paraCadaElemento(function(iLinha){
+                let valoresDaLinhaObtidos = context.getLinha(iLinha);
+
+                switch( Vectorization.Vector.isVectorizationVector(valoresDaLinhaObtidos) || 
+                        Vectorization.BendableVector.isVectorizationBendableVector(valoresDaLinhaObtidos) 
+                ){
+                    case true:
+                        valoresDaLinhaObtidos.adicionarElemento( valoresNovaColuna[iLinha] );
+                        break;
+
+                    case false:
+                        let novoVetorVectorization = Vectorization.Vector(valoresDaLinhaObtidos).adicionarElemento( valoresNovaColuna[iLinha] )
+                        context._definirValorLinha(iLinha, valoresDaLinhaObtidos.length, [... novoVetorVectorization.valores()] );
+                        break;
+                }
+            });
+
+            //Atualiza a quantidade das colunas
+            context.columns = context.calcTamanhos().lerIndice(1);
+            context.colunas = context.columns;
+
+			//Cria um nome para o campo
+			context.mapaCampos[nomeCampo] = context.colunas + 1;
+			context.nomesCampos.push( nomeCampo );
+			context.mapearNomes();
+
+        }else{
+            throw 'Não da pra adicionar uma nova coluna se a quantidade de elementos não bater com a quantidade de linhas!. Não permitido.';
+        }
+    }
+
     /*
 	Pesquisa amostras usando criterios de busca, e retorna um novo DataStructure.
 	
