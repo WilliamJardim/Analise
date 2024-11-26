@@ -1,5 +1,7 @@
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     const context = Analise.Base(dadosIniciais);
+	context.objectName = 'DataStructure';
+	context.extendedFrom = 'Matrix';
 
 	context.dadosIniciais = dadosIniciais;
 	context.nomesCampos = config.campos || [];
