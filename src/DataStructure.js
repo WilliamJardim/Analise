@@ -5,16 +5,23 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	context.nomesCampos = config.campos || [];
 	context.mapaCampos  = {};
 
+	context.mapearNomes = function(){
+		/**
+		* Transforma nomes dos campos em indices e isso pode ser usado pelo método getColunaCampo para obter o Vector que contém os dados da coluna cujo nome é TAL
+		*/
+		for( let i = 0 ; i < context.nomesCampos.length ; i++ )
+		{
+			const nomeCampo    = context.nomesCampos[i];
+			const indiceCampo  = i;
+	
+			context.mapaCampos[ nomeCampo ] = indiceCampo;
+		}
+	}
+
 	/**
 	* Transforma nomes dos campos em indices e isso pode ser usado pelo método getColunaCampo para obter o Vector que contém os dados da coluna cujo nome é TAL
 	*/
-	for( let i = 0 ; i < context.nomesCampos.length ; i++ )
-	{
-		const nomeCampo    = context.nomesCampos[i];
-		const indiceCampo  = i;
-
-		context.mapaCampos[ nomeCampo ] = indiceCampo;
-	}
+	context.mapearNomes();
 
 	/**
 	* Obtém o indice de um campo nomeCampo
@@ -40,6 +47,25 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	context.getColunaCampo = function( nomeCampo ){
 		return context.extrairValoresColuna( context.getIndiceCampo( nomeCampo ) );
 	}
+
+	/**
+	* Permite renomear um campo
+	* @param {*} nomeCampo 
+	* @param {*} novoNomeCampo 
+	*/
+	context.renomearCampo = function( nomeCampo, novoNomeCampo ){
+		const indiceCampo = context.getIndiceCampo( nomeCampo );
+		context.nomesCampos[indiceCampo] = novoNomeCampo;
+		context.mapearNomes();
+	}
+
+	/**
+	* Exclui um nome de campo 
+	*/
+	context.desnomearCampo = function( nomeCampo ){
+		delete context.mapaCampos[ nomeCampo ];
+		context.mapearNomes();
+	}	
 
     /**
     * Extrai as linhas
