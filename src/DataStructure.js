@@ -256,12 +256,17 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	//Metodos de matematica
 	context.sumColumn = function(columnName){
-		let acumulated = 0 ;
-		context.forEach( function(amostra, indice, context){
+		let acumulated = 0;
+		context.forEach( function(indice, amostra, context){
 			acumulated += Number( amostra.getCampo(columnName) );
 		});
 
 		return acumulated;
+	}
+
+	context.meanColumn = function(columnName){
+		const somaColuna = context.sumColumn( columnName );
+		return somaColuna / context.getLinhas();
 	}
 
     return context;
