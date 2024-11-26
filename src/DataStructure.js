@@ -184,6 +184,58 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	//Cria uma nova coluna nesta Vectorization.Matrix
 	context.adicionarCampo = context.adicionarColuna;
 
+	/**
+	* Aplica uma função a uma ou mais colunas e cria uma nova coluna com os resultados.
+	* 
+	* @param {string[]} camposEntrada - Os nomes das colunas de entrada.
+	* @param {function} funcao - A função que será aplicada aos valores das colunas de entrada.
+	* @param {string} novoCampo - O nome da nova coluna a ser criada.
+    *
+	* exemplo:
+	*	dataset.criarColunaCalculadaExplicita(['campo1', 'campo2'], (campo1, campo2) => { return campo1 + campo2 }, 'soma' );
+	*/
+	context.criarColunaCalculadaExplicita = function(camposEntrada, funcao, novoCampo) {
+		// Validar se os campos de entrada existem
+		const indicesEntrada = context.getIndiceCampos(camposEntrada);
+
+		// Iterar sobre as linhas e aplicar a função
+		const novaColuna = context.map((indiceLinha, linha) => {
+			const valoresEntrada = indicesEntrada.map(indice => linha[indice]);
+			return funcao(...valoresEntrada);
+		});
+
+
+		// Adicionar a nova coluna aos dados
+		context.adicionarColuna( novaColuna, novoCampo );
+
+		// Atualizar metadados
+		context.nomesCampos.push(novoCampo);
+		context.mapearNomes();
+	};
+
+	/**
+	* Aplica uma função a uma ou mais colunas e cria uma nova coluna com os resultados.
+	* 
+	* @param {function} funcao - A função que será aplicada aos valores das colunas de entrada.
+	* @param {string} novoCampo - O nome da nova coluna a ser criada.
+    *
+	* exemplo:
+	*	dataset.criarColunaCalculada( (indiceAmostra, amostra, contextoDataset) => { return amostra.getCampo('campo1') + amostra.getCampo('campo2') }, 'soma' );
+	*/
+	context.criarColunaCalculada = function(funcao, novoCampo) {
+		// Iterar sobre as linhas e aplicar a função
+		const novaColuna = context.map((indiceLinha, linha) => {
+			return funcao(indiceLinha, linha);
+		});
+
+		// Adicionar a nova coluna aos dados
+		context.adicionarColuna( novaColuna, novoCampo );
+
+		// Atualizar metadados
+		context.nomesCampos.push(novoCampo);
+		context.mapearNomes();
+	};
+
     /*
 	Pesquisa amostras usando criterios de busca, e retorna um novo DataStructure.
 	
