@@ -51,6 +51,14 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 	});
 
+	/**
+	* Converte este DataStructure em um Vectorization.Matrix
+	* @returns {Matrix} - Um novo objeto Matrix contendo os dados do DataStructure.
+	* @returns 
+	*/
+	context.toMatrix = function(){
+		return Vectorization.Matrix( context.raw() );
+	}
 
 	/**
 	* Obtém um Vectorization.Vector que contém os dados da coluna cujo nome é nomeCampo
