@@ -95,7 +95,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}	
 
 	/**
-	* Extrai todos os valores de um campo
+	* Extrai todos os valores de um campo e retorna um Vectorization.Vector
 	*/
 	context.extrairValoresCampo = function( nomeCampo ){
 		return context.extrairValoresColuna( context.getIndiceCampo(nomeCampo) );
