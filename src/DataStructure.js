@@ -33,6 +33,15 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return context.mapaCampos[ nomeCampo ];
 	}
 
+	context.getIndiceCampos = function(nomesCampos){
+		const indicesCampos = [];
+		nomesCampos.forEach(function( nomeCampo ){
+			indicesCampos.push( context.getIndiceCampo(nomeCampo) );
+		});
+
+		return indicesCampos;
+	}
+
 	//Injeta uma função dentro de cada amostra
 	context.forEach(function(indice, vetorAmostra, contextoDataStructure){
 		vetorAmostra.getCampo = function( nomeCampo ){
@@ -53,6 +62,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*/
 	context.removerColunaCampo = function( nomeCampo ){
 		return Analise.DataStructure( context.removerColuna( context.getIndiceCampo( nomeCampo ) ) );
+	}
+
+	/**
+	* Apaga varias colunas de campo, e retorna um novo DataStructure
+	*/
+	context.removerColunasCampos = function( nomesCampo ){
+		return Analise.DataStructure( context.removerColunas( context.getIndiceCampos( nomesCampo ) ) );
 	}
 
 	/**
