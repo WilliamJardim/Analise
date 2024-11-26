@@ -243,8 +243,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	context.filter = function(fn){
 		let newArray = [];
 
-		this.forEach(function(amostra, indice, datastructure){
-			const rawamostra = amostra.toJson();
+		context.forEach(function(indice, amostra, datastructure){
+			const rawamostra = amostra.raw();
 
 			if( fn( amostra, rawamostra, datastructure ) == true ){
 				newArray.push(amostra);
@@ -257,7 +257,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	//Metodos de matematica
 	context.sumColumn = function(columnName){
 		let acumulated = 0 ;
-		this.forEach( function(amostra, indice, context){
+		context.forEach( function(amostra, indice, context){
 			acumulated += Number( amostra.getCampo(columnName) );
 		});
 
