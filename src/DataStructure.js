@@ -120,6 +120,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		vetorAmostra.getCampo = function( nomeCampo ){
 			return vetorAmostra.getIndice( contextoDataStructure.getIndiceCampo(nomeCampo) );
 		}
+
+		vetorAmostra.setCampo = function( nomeCampo, valorDefinir ){
+			vetorAmostra.definirElementoNoIndice( contextoDataStructure.getIndiceCampo(nomeCampo), valorDefinir ) ;
+		}
 	});
 
 	/**
@@ -192,6 +196,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		);
 	}
 
+	/**
+	* Extrai todos os valores de vários campos e retorna um novo DataStructure
+	*/
+	context.selectCampos     = context.extrairValoresCampos;
+	context.selecionarCampos = context.extrairValoresCampos;
+
     /**
     * Extrai as linhas
     * @param {*} linhaInicial 
@@ -201,6 +211,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     context.lineRange = function(linhaInicial, linhaFinal){
         return context.slice(linhaInicial, linhaFinal);
     }
+
+	/*
+	Itera sobre cada campo do DataStructure, chamando um callback sincrono theFunction( campo, indiceCampo, valoresCampo, context )
+	*/
+	context.forEachCampo = function( theFunction ){
+		for( let i = 0 ; i < context.nomesCampos.length ; i++ )
+		{
+			theFunction(context.nomesCampos[i], i, context.extrairValoresCampo(context.nomesCampos[i]).raw(), context);
+		}
+	}
 
 	//Cria uma nova coluna nesta Vectorization.Matrix
 	//OVERRIDE
@@ -262,6 +282,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	//Cria uma nova coluna nesta Vectorization.Matrix
 	context.adicionarCampo = context.adicionarColuna;
+	context.criarColuna    = context.adicionarColuna;
 
 	/**
 	* Aplica uma função a uma ou mais colunas e cria uma nova coluna com os resultados.
@@ -314,6 +335,15 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		context.nomesCampos.push(novoCampo);
 		context.mapearNomes();
 	};
+
+	/*
+	Preenche uma determinada coluna com o mesmo valor fixo em todas as amostras
+	*/
+	context.preencherCampo = function(nomeCampo, valorPreencher){
+		context.forEach( function(indiceAmostra, amostra, contextoDataStructure){
+			amostra.setCampo(nomeCampo, valorPreencher);
+		});
+	}
 
     /*
 	Pesquisa amostras usando criterios de busca, e retorna um novo DataStructure.
