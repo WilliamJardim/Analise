@@ -3,7 +3,7 @@
  * Author Name: William Alves Jardim
  * Author Email: williamalvesjardim@gmail.com
  * 
- * LICENSE: WilliamJardim/Vectorization � 2024 by William Alves Jardim is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/**
+ * LICENSE: WilliamJardim/Vectorization � 2024 by William Alves Jardim is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/**
 */
 if(typeof window === 'undefined'){
     global.VECTORIZATION_BUILD = true;
@@ -5182,13 +5182,33 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
             });
 
             //Atualiza a quantidade das colunas
-            context.columns = matrix1.calcTamanhos().lerIndice(1);
+            context.columns = context.calcTamanhos().lerIndice(1);
             context.colunas = context.columns;
 
         }else{
             throw 'Não da pra adicionar uma nova coluna se a quantidade de elementos não bater com a quantidade de linhas!. Não permitido.';
         }
     }
+
+    //Remove uma coluna nesta Vectorization.Matrix e retorna uma nova Vectorization.Matrix
+    context.removerColuna = function( indiceColuna ){
+        let matrixNova = [];
+        for( let i = 0 ; i < context.linhas ; i++ )
+        {
+            const LinhaVector = context.getLinha(i);
+            const NovaVector  = Vectorization.Vector([]);
+
+            //Para cada elemento no LinhaVector
+            LinhaVector.forEach(function( indiceElemento, valorElemento, contextoLinhaVector ){
+                //Se o indice não for o indice que estamos ignorando
+                if( indiceElemento != indiceColuna ){
+                    NovaVector.push( valorElemento );
+                }
+            });
+        }
+
+        return Vectorization.Matrix(matrixNova);
+    }   
 
     context.zerarColuna = function(indiceColuna, valorDefinirNoLugar=0){
         //Consulta se a gravação/modificação de dados está bloqueada neste Vectorization.Matrix
