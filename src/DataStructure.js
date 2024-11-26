@@ -101,6 +101,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return context.extrairValoresColuna( context.getIndiceCampo(nomeCampo) );
 	}
 
+	/**
+	* Extrai todos os valores de vários campos
+	*/
+	context.extrairValoresCampos = function( nomeCampo ){
+		return context.extrairValoresColunas( context.getIndiceCampos(nomeCampo) );
+	}
+
     /**
     * Extrai as linhas
     * @param {*} linhaInicial 
