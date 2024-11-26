@@ -140,6 +140,9 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
         }
     }
 
+	//Cria uma nova coluna nesta Vectorization.Matrix
+	context.adicionarCampo = context.adicionarColuna;
+
     /*
 	Pesquisa amostras usando criterios de busca, e retorna um novo DataStructure.
 	
