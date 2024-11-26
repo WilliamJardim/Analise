@@ -1,5 +1,11 @@
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
-    const context = Analise.Base(dadosIniciais);
+	const parametrosAdicionais = {
+		flexibilidade: config.flexibilidade || null
+	};
+
+    const context = Analise.Base(dadosIniciais, parametrosAdicionais);
+
+	context.parametrosAdicionais = parametrosAdicionais || {};
 	context.objectName = 'DataStructure';
 	context.extendedFrom = 'Matrix';
 
@@ -57,7 +63,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* @returns 
 	*/
 	context.toMatrix = function(){
-		return Vectorization.Matrix( context.raw() );
+		return Vectorization.Matrix( context.raw(), context.parametrosAdicionais );
 	}
 
 	/**

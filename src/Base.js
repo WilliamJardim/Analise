@@ -1,7 +1,7 @@
 Analise = {};
 
-Analise.Base = function( config ){
-    const context = Vectorization.Matrix(config);
+Analise.Base = function( config, parametrosAdicionais={} ){
+    const context = Vectorization.Matrix(config, parametrosAdicionais);
 
     /**
     * Copia parametros para dentro da instancia desse objeto 
