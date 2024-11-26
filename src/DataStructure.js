@@ -49,6 +49,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Apaga a coluna de um campo, e retorna um novo DataStructure
+	*/
+	context.removerColunaCampo = function( nomeCampo ){
+		return Analise.DataStructure( context.removerColuna( context.getIndiceCampo( nomeCampo ) ) );
+	}
+
+	/**
 	* Permite renomear um campo
 	* @param {*} nomeCampo 
 	* @param {*} novoNomeCampo 
