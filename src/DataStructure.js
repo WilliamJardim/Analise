@@ -1,17 +1,73 @@
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
-	const parametrosAdicionais = {
+	let parametrosAdicionais = {
 		flexibilidade: config.flexibilidade || null
 	};
 
-    const context = Analise.Base(dadosIniciais, parametrosAdicionais);
+	let map_keysIdentificadas = {};
+
+	let dadosIniciais_tratados  = [];
+
+	let tipoDadosIniciais       = undefined;
+
+	//Tratar os dados iniciais
+	//Se for um array de JSON
+	if( typeof dadosIniciais == 'object' && !(dadosIniciais[0] instanceof Array) )
+	{
+		tipoDadosIniciais = 'JSON_ARRAY';
+
+		//Para cada amostra
+		for( let i = 0 ; i < dadosIniciais.length ; i++ )
+		{
+			//Extrai as informações
+			const amostraJSON     = dadosIniciais[i];
+			const keysAmostra     = Object.keys(amostraJSON);
+
+			//Vai salvando as chaves no mapa de chaves identificadas
+			keysAmostra.forEach(function(chave){
+				map_keysIdentificadas[chave] = true;
+			});
+
+			const valoresAmostra  = Object.values(amostraJSON);
+
+			//Joga os dados da amostra no Array
+			dadosIniciais_tratados.push(valoresAmostra);
+		}
+
+	//Se for uma Matrix
+	}else if( dadosIniciais[0] instanceof Array ){
+		tipoDadosIniciais = 'Matrix';
+
+		//Atribui os dados ao dadosIniciais_tratados
+		dadosIniciais_tratados = JSON.parse(JSON.stringify(dadosIniciais));
+	}
+
+    const context = Analise.Base(dadosIniciais_tratados, parametrosAdicionais);
+	
+	context.tipoDadosIniciais = tipoDadosIniciais;
+	context.keysIdentificadas = [];
 
 	context.parametrosAdicionais = parametrosAdicionais || {};
 	context.objectName = 'DataStructure';
 	context.extendedFrom = 'Matrix';
 
 	context.dadosIniciais = dadosIniciais;
-	context.nomesCampos = config.campos || [];
+
 	context.mapaCampos  = {};
+
+	//Pega o nome dos campos
+	switch(tipoDadosIniciais)
+	{
+		//Se for Matrix, os keysIdentificadas vai ser o mesmo que config.campos
+		case 'Matrix':
+			context.keysIdentificadas = config.campos || [];
+			context.nomesCampos       = config.campos || [];
+			break;
+
+		case 'JSON_ARRAY':
+			context.keysIdentificadas = config.campos || Object.keys( map_keysIdentificadas );
+			context.nomesCampos       = config.campos || context.keysIdentificadas;
+			break;
+	}
 
 	context.mapearNomes = function(){
 		/**
@@ -30,6 +86,15 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Transforma nomes dos campos em indices e isso pode ser usado pelo método getColunaCampo para obter o Vector que contém os dados da coluna cujo nome é TAL
 	*/
 	context.mapearNomes();
+
+	/**
+	* Obtem o nome dos campos
+	* @param {*} nomeCampo 
+	* @returns 
+	*/
+	context.getNomeCampos = function(){
+		return context.nomesCampos;
+	}
 
 	/**
 	* Obtém o indice de um campo nomeCampo
