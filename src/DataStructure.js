@@ -82,6 +82,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		const indiceCampo = context.getIndiceCampo( nomeCampo );
 		context.nomesCampos[indiceCampo] = novoNomeCampo;
 		context.mapearNomes();
+		return context;
 	}
 
 	/**
@@ -90,6 +91,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	context.desnomearCampo = function( nomeCampo ){
 		delete context.mapaCampos[ nomeCampo ];
 		context.mapearNomes();
+		return context;
 	}	
 
     /**
@@ -156,6 +158,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
         }else{
             throw 'Não da pra adicionar uma nova coluna se a quantidade de elementos não bater com a quantidade de linhas!. Não permitido.';
         }
+
+		return context;
     }
 
 	//Cria uma nova coluna nesta Vectorization.Matrix
