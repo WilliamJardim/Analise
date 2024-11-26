@@ -5193,6 +5193,7 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
     //Remove uma coluna nesta Vectorization.Matrix e retorna uma nova Vectorization.Matrix
     context.removerColuna = function( indiceColuna ){
         let matrixNova = [];
+        //Para cada linha
         for( let i = 0 ; i < context.linhas ; i++ )
         {
             const LinhaVector = context.getLinha(i);
@@ -5205,6 +5206,8 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
                     NovaVector.push( valorElemento );
                 }
             });
+
+            matrixNova.push(NovaVector.raw());
         }
 
         return Vectorization.Matrix(matrixNova);
