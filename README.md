@@ -2,4 +2,4 @@
 A data analysis package made from scratch in JavaScript
 
 # Dependency
-  - WilliamJardim/Vectorization: https://github.com/WilliamJardim/Vectorization
+  - WilliamJardim/VectorizationJS: https://github.com/WilliamJardim/VectorizationJS
