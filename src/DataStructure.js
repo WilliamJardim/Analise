@@ -102,7 +102,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
-	* Extrai todos os valores de vários campos
+	* Extrai todos os valores de vários campos e retorna um novo DataStructure
 	*/
 	context.extrairValoresCampos = function( nomeCampos ){
 		return Analise.DataStructure( 
