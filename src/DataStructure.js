@@ -528,8 +528,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	/*
 	Uma busca mais programatica, retorna um novo datastructure
 
-		ex: filter(function(amostraSeries, rawamostra, datastructure){
-			if( amostraSeries.getCampo(FIELDNAME) == VALUE ){
+		ex: filter(function(amostra, rawamostra, datastructure){
+			if( amostra.getCampo(FIELDNAME) == VALUE ){
 				return true;
 			}
 		})
