@@ -104,8 +104,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	/**
 	* Extrai todos os valores de vários campos
 	*/
-	context.extrairValoresCampos = function( nomeCampo ){
-		return context.extrairValoresColunas( context.getIndiceCampos(nomeCampo) );
+	context.extrairValoresCampos = function( nomeCampos ){
+		return Analise.DataStructure( 
+			Vectorization.Matrix( 
+				context.extrairValoresColunas( context.getIndiceCampos(nomeCampos) ) 
+			).transposta().raw(), 
+			{ campos: nomeCampos } 
+		);
 	}
 
     /**
