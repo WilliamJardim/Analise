@@ -172,6 +172,37 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Apaga uma ou mais amostras 
+	*
+	* Exemplo:
+	*   dataset.deletarAmostras([ { fieldA: 'idade', op: 'isEqual', fieldB: '25' } ]);
+    * 
+	*  Nesse exemplo, isso iria apagar todas as amostras cujo campo "idade" tiver o valor 25
+	* 
+	*/
+	context.deletarAmostras = function( criterios ){
+		const pesquisaApagar = context.findSamples(criterios);
+
+		for( let i = 0 ; i < pesquisaApagar.length ; i++ )
+		{
+			const amostraApagar = pesquisaApagar[i];
+			const indiceApagar  = amostraApagar.index;
+
+			//Apaga a amostra amostraApagar
+			context.content = context.content.filter(function( amostraAtual ){
+
+				if( amostraAtual.index != indiceApagar ){
+					return amostraAtual;
+				}
+
+			});
+
+			dataset.atualizarQuantidadeColunasLinhas();
+		}
+
+	}
+
+	/**
 	* Converte este DataStructure em um Vectorization.Matrix
 	* @returns {Matrix} - Um novo objeto Matrix contendo os dados do DataStructure.
 	* @returns 
