@@ -97,6 +97,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Verifica se um campo existe ou não 
+	*/
+	context.existeCampo = function( nomeCampo ){
+		return dataset.mapaCampos[ nomeCampo ] != undefined;
+	}
+
+	/**
 	* Obtém o indice de um campo nomeCampo
 	*/
 	context.getIndiceCampo = function( nomeCampo ){
@@ -125,6 +132,44 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			vetorAmostra.definirElementoNoIndice( contextoDataStructure.getIndiceCampo(nomeCampo), valorDefinir ) ;
 		}
 	});
+
+	/**
+	* Adiciona uma nova amostrar
+	*/
+	context.inserir = function( amostraObj ){
+		if( Vectorization.Vector.isVector( amostraObj ) == true ){
+
+			if( amostraObj.length != context.colunas ){
+				throw `A nova amostra ${amostraObj} tem ${ amostraObj.length } colunas, porém, esse DataStructure possui ${context.colunas} colunas!`
+			}
+
+			context.push(amostraObj);
+
+		//Caso não seja um Vectorization.Vector, então, ele pode um JSON
+		}else if( typeof amostraObj == 'object' ) {
+
+			const camposAmostra = Object.keys( amostraObj );
+			const valoresAmostra = Object.values( amostraObj );
+			const temTodosOsCampos = context.nomesCampos.every( ( campo )=>{ return amostraObj[campo] != undefined } );
+
+			if(!temTodosOsCampos){
+				throw `A amostra precisa ter os campos [${ context.nomesCampos }] `;
+			}
+
+			//Verifica se existe algum campo novo
+			camposAmostra.forEach(function( nomeCampo ){
+
+				if( context.existeCampo( nomeCampo ) == false )
+				{
+					throw `O campo ${ nomeCampo } não existe! `;
+				}
+
+			});
+
+			//Adiciona a amostra
+			context.push(valoresAmostra);
+		}
+	}
 
 	/**
 	* Converte este DataStructure em um Vectorization.Matrix
