@@ -122,6 +122,53 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return indicesCampos;
 	}
 
+	/**
+	* @override
+    * Obtem um novo DataStructure exatamente igual a este
+    * Ou seja, faz um copia do propio objeto, identico, porém sem manter as referencias. 
+    * @returns {Analise.DataStructure}
+    */
+    context.duplicar = function(){
+        let novaMatrix = [];
+        let novaMatrix_Matrix = null; //Se for necessario
+
+        if( context.isFlexivelNasColunas == true ){
+            //Nesse caso foi necessario usar o novaMatrix_Matrix como Vectorization.Matrix
+            novaMatrix_Matrix = Vectorization.Matrix([], {
+                flexibilidade: context.flexivel
+            });
+        }
+
+        for( let i = 0 ; i < context.rows ; i++ )
+        {
+            if( context.isFlexivelNasColunas == false ){
+                novaMatrix.push( Vectorization.Vector(context.getLinha(i)).clonar() );
+
+            }else{
+                novaMatrix_Matrix.adicionarVetorComoColuna( Vectorization.BendableVector(context.getLinha(i), {
+                    flexibilidade: context.flexivel
+                }).clonar() );
+            }
+        }
+
+        const dadosMatrix = context.isFlexivelNasColunas == false ? Vectorization.Matrix(novaMatrix).raw() : 
+                                                                    novaMatrix_Matrix.raw();
+
+		return Analise.DataStructure(dadosMatrix, 
+									{
+			                          campos: context.nomesCampos, 
+									  flexibilidade: context.flexibilidade 
+									});
+    }
+
+	/**
+	* @override
+    * Obtem um novo DataStructure exatamente igual a este
+    * Ou seja, faz um copia do propio objeto, identico, porém sem manter as referencias. 
+    * @returns {Analise.DataStructure}
+    */
+	context.clonar = context.duplicar;
+
 	//Injeta uma função dentro de cada amostra
 	context.forEach(function(indice, vetorAmostra, contextoDataStructure){
 		vetorAmostra.getCampo = function( nomeCampo ){
@@ -268,7 +315,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			Vectorization.Matrix( 
 				context.extrairValoresColunas( context.getIndiceCampos(nomeCampos) ) 
 			).transposta().raw(), 
-			{ campos: nomeCampos } 
+			{ 
+			   campos: nomeCampos,
+			   flexibilidade: nomeCampos.map( function( nomeCampoAtual ){ return context.flexibilidade[ context.getIndiceCampo( nomeCampoAtual ) ] } )
+			} 
 		);
 	}
 
@@ -298,8 +348,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 	}
 
-	//Cria uma nova coluna nesta Vectorization.Matrix
-	//OVERRIDE
+	/**
+	* @override
+	* Cria uma nova coluna nesta Vectorization.Matrix
+	*/
     context.adicionarColuna = function(valoresNovaColuna, nomeCampo=''){
         //Consulta se a gravação/modificação de dados está bloqueada neste Vectorization.Matrix
         if( context._isBloqueado() == true ){
