@@ -250,6 +250,49 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Substitui os valores(das amostras) numa determinada coluna que bater com uma condiçao
+	* Ele varre as amostras, e a coluna TAL dessa amostra, se bater com a condição, ela vai ter seu valor substituido
+    *
+	* @param { String } nomeCampo - Nome do campo que quero substituir o valor
+	* @param { Array } criterios - Os critérios de busca das amostras que terão suas colunas substituidas
+	* @param { Function } replaceFunctionOrValue - O valor que as colunas das amotras encontradas deverão ter, ou uma função que retorna esse valor
+	*  Se for uma função, ela recebe os seguintes parametros: (objAmostra, indiceAmostra, indiceColuna, valorExistente, contexto )
+    *
+	* Exemplo:
+	*    dataset.substituirValorColuna( 'nome', [{ fieldA: 'nome', op: 'isEqual', fieldB: 'William' }], 'NINGUEM' );
+	*
+    *  Isso trocaria onde o nome é 'William' na coluna nome para 'NINGUEM'
+	*
+	*/
+	context.substituirValorColuna = function( nomeCampo, criterios, replaceFunctionOrValue ){
+		const pesquisaApagar         = context.findSamples(criterios);
+		const indiceColunaSubstituir = context.getIndiceCampo(nomeCampo);
+
+		for( let i = 0 ; i < pesquisaApagar.length ; i++ )
+		{
+			const amostraSubstituir   = pesquisaApagar[i];
+			const indiceAtual         = amostraSubstituir.index;
+			const valorExistente      = amostraSubstituir[ indiceColunaSubstituir ];
+
+			if( typeof replaceFunctionOrValue == 'function' ){
+				//Se for uma função que representa o valor
+				context.definirValorLinha( indiceAtual, 
+										   indiceColunaSubstituir, 
+										   replaceFunctionOrValue.bind(context)( amostraSubstituir, indiceAtual, indiceColunaSubstituir, valorExistente, context ) 
+										 );
+
+			}else{
+				//Se for um valor
+				context.definirValorLinha( indiceAtual, 
+										   indiceColunaSubstituir, 
+										   replaceFunctionOrValue 
+										);
+			}
+		}
+
+	}
+
+	/**
 	* Converte este DataStructure em um Vectorization.Matrix
 	* @returns {Matrix} - Um novo objeto Matrix contendo os dados do DataStructure.
 	* @returns 
