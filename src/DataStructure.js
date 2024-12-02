@@ -88,6 +88,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	context.mapearNomes();
 
 	/**
+	* Obtem uma determinada amostra 
+	*/
+	context.getAmostra = context.getLinha;
+
+	/**
 	* Obtem o nome dos campos
 	* @param {*} nomeCampo 
 	* @returns 
