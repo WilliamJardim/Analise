@@ -734,5 +734,23 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return somaColuna / context.getLinhas();
 	}
 
+	/**
+	* Soma todos os números de uma linha 
+	*/
+	context.somarLinha = function( numeroLinha ){
+		const objetoLinha = context.getLinha( numeroLinha );
+
+		let acumulated = 0;
+		objetoLinha.forEach( function(indice, valorAtual, contextoLinha){
+			if( typeof valorAtual.raw() === 'number' ){
+				acumulated += Number( valorAtual );
+			}else{
+				console.warn( `${ valorAtual } é uma string, e não foi incluido na soma!` );
+			}
+		});
+
+		return acumulated;
+	}
+
     return context;
 }
