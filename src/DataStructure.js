@@ -719,7 +719,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return newArray;
 	}
 
-	//Metodos de matematica
+	/*** Metodos de matematica ***/
+
+	/**
+	* Somar uma coluna
+	* @param {String} columnName 
+	* @returns {Number}
+	*/
 	context.sumColumn = function(columnName){
 		let acumulated = 0;
 		context.forEach( function(indice, amostra, context){
@@ -728,6 +734,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 		return acumulated;
 	}
+
+	/**
+	* Somar uma coluna
+	* @param {String} columnName 
+	* @returns {Number}
+	*/
+	context.somarColuna = context.sumColumn;
 
 	context.meanColumn = function(columnName){
 		const somaColuna = context.sumColumn( columnName );
