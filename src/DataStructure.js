@@ -91,7 +91,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			dadosConvertidos.push(estruturaCamposAmostra);
 		});
 
-		if(downloadArquivo && downloadArquivo.endswith('.json') ){
+		if(downloadArquivo && downloadArquivo.endsWith('.json') ){
 			context.downloadArquivo( dadosConvertidos , downloadArquivo );
 		}
 
