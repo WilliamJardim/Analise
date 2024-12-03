@@ -336,6 +336,13 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Converte este DataStructure em um Vectorization.Matrix
+	* @returns {Matrix} - Um novo objeto Matrix contendo os dados do DataStructure.
+	* @returns 
+	*/
+	context.exportarMatrix = context.toMatrix;
+
+	/**
 	* Obtém um Vectorization.Vector que contém os dados da coluna cujo nome é nomeCampo
 	*/
 	context.getColunaCampo = function( nomeCampo ){
