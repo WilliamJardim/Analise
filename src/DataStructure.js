@@ -306,6 +306,27 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	context.injetarFuncoesAmostras();
 
+	/** 
+	* @override
+    * Remove amostras duplicadas deste Vectorization.Matrix com base em colunas específicas.
+    */
+    context.distinct = function(){
+        const valoresJaVistos = {};
+        const valoresUnicos = Vectorization.Matrix([], context.parametrosAdicionais);
+
+        context.forEach(function(indice, linhaVector){
+            const identificador = linhaVector.raw()
+                                             .join('|');
+
+            if( valoresJaVistos[identificador] == undefined ){
+                valoresJaVistos[identificador] = true;
+                valoresUnicos.push( linhaVector );
+            }
+        });
+
+        return Analise.DataStructure(valoresUnicos.raw(), context.parametrosAdicionais);
+    }
+
 	/**
 	* Adiciona uma nova amostrar
 	*/
