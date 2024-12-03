@@ -11,11 +11,15 @@ var dataset = Analise.DataStructure([
 });*/
 
 var dataset = Analise.DataStructure([
-    { nome: 'William', idade: 42, numero1: 19 },
-    { nome: 'Rafael',  idade: 25, numero1: 19 },
-    { nome: 'Daniel',  idade: 19, numero1: 19 },
-    { nome: 'Danilo',  idade: 32, numero1: 19 }
+    { nome: 'William', idade: 42, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Rafael',  idade: 25, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Daniel',  idade: 19, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Danilo',  idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 }
 
 ], {
-    flexibilidade  : ['texto', 'numero', 'numero']
+    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']
+});
+
+var dataset2 = Analise.DataStructure([], {
+    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']
 });

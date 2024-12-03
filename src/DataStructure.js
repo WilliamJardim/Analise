@@ -98,6 +98,93 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return dadosConvertidos;
 	}
 
+	/**
+	* Carrega um arquivo JSON do computador via upload e depois injeta dentro deste DataStructure
+	* @param {Function} callback 
+	*/
+	context.loadJSON = function(callback) {
+		// Cria dinamicamente o elemento <input> do tipo "file"
+		const inputFile = document.createElement("input");
+		inputFile.type = "file";
+		inputFile.accept = ".json"; // Aceita apenas arquivos JSON
+	
+		// Adiciona o evento "change" para capturar o arquivo selecionado
+		inputFile.addEventListener("change", function (event) {
+			const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+	
+			if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+	
+			const reader = new FileReader();
+	
+			// Lê o conteúdo do arquivo como texto
+			reader.onload = function () {
+				try {
+					// Parseia o conteúdo do arquivo para JSON
+					const jsonData = JSON.parse(reader.result);
+					
+					//Para cada amostra
+					const dados_tratados = [];
+					const map_keysIdentificadas_tratado = {};
+
+					for( let i = 0 ; i < jsonData.length ; i++ )
+					{
+						//Extrai as informações
+						const amostraJSON     = jsonData[i];
+						const keysAmostra     = Object.keys(amostraJSON);
+			
+						//Vai salvando as chaves no mapa de chaves identificadas
+						keysAmostra.forEach(function(chave){
+							map_keysIdentificadas_tratado[chave] = true;
+						});
+			
+						const valoresAmostra  = Object.values(amostraJSON);
+			
+						//Joga os dados da amostra no Array
+						dados_tratados.push(valoresAmostra);
+					}
+
+					//Se os campos não existem neste DataStructure, cria
+					context.keysIdentificadas = Object.keys( map_keysIdentificadas_tratado );
+					context.nomesCampos       = context.keysIdentificadas;
+
+					context.content = dados_tratados;
+					context._matrix2Advanced();
+					context.mapearNomes();
+					context.atualizarQuantidadeColunasLinhas();
+
+					//Atualiza a quantidade das colunas
+					//Como é um JSON, vai precisar calcular de forma diferente as colunas
+					context.columns = context.content[0].length;
+					context.colunas = context.columns;
+
+					context.injetarFuncoesAmostras();
+
+					if(callback)
+					{
+						// Chama o callback com os dados JSON
+						callback(jsonData, context);
+					}
+
+				} catch (error) {
+					console.error("Erro ao carregar o arquivo JSON:", error);
+					alert("O arquivo selecionado não é um JSON válido.");
+				}
+			};
+	
+			// Lê o arquivo
+			reader.readAsText(file);
+	
+			// Remove o elemento de input do DOM após a leitura
+			document.body.removeChild(inputFile);
+		});
+	
+		// Adiciona o elemento de input ao DOM para que possa ser utilizado
+		document.body.appendChild(inputFile);
+	
+		// Simula um clique no input para abrir a janela de seleção de arquivo
+		inputFile.click();
+	}
+
 	context.mapearNomes = function(){
 		/**
 		* Transforma nomes dos campos em indices e isso pode ser usado pelo método getColunaCampo para obter o Vector que contém os dados da coluna cujo nome é TAL
@@ -204,15 +291,20 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	context.clonar = context.duplicar;
 
 	//Injeta uma função dentro de cada amostra
-	context.forEach(function(indice, vetorAmostra, contextoDataStructure){
-		vetorAmostra.getCampo = function( nomeCampo ){
-			return vetorAmostra.getIndice( contextoDataStructure.getIndiceCampo(nomeCampo) );
-		}
+	context.injetarFuncoesAmostras = function(){
+		
+		context.forEach(function(indice, vetorAmostra, contextoDataStructure){
+			vetorAmostra.getCampo = function( nomeCampo ){
+				return vetorAmostra.getIndice( contextoDataStructure.getIndiceCampo(nomeCampo) );
+			}
 
-		vetorAmostra.setCampo = function( nomeCampo, valorDefinir ){
-			vetorAmostra.definirElementoNoIndice( contextoDataStructure.getIndiceCampo(nomeCampo), valorDefinir ) ;
-		}
-	});
+			vetorAmostra.setCampo = function( nomeCampo, valorDefinir ){
+				vetorAmostra.definirElementoNoIndice( contextoDataStructure.getIndiceCampo(nomeCampo), valorDefinir ) ;
+			}
+		});
+	}
+
+	context.injetarFuncoesAmostras();
 
 	/**
 	* Adiciona uma nova amostrar
