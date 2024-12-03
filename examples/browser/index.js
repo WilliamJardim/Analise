@@ -20,6 +20,11 @@ var dataset = Analise.DataStructure([
     flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']
 });
 
-var dataset2 = Analise.DataStructure([], {
-    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']
+var dataset2 = Analise.DataStructure([
+    { nome: 'William', cargo: 'DEV', outro: 45 },
+    { nome: 'Rafael',  cargo: 'DEV', outro: 45 },
+    { nome: 'Daniel',  cargo: 'DEV', outro: 45 },
+    { nome: 'Danilo',  cargo: 'DEV', outro: 45 }
+], {
+    flexibilidade  : ['texto', 'texto', 'numero']
 });

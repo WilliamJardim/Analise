@@ -301,6 +301,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			vetorAmostra.setCampo = function( nomeCampo, valorDefinir ){
 				vetorAmostra.definirElementoNoIndice( contextoDataStructure.getIndiceCampo(nomeCampo), valorDefinir ) ;
 			}
+
+			//Cria um novo campo dentro da amostra atual
+			vetorAmostra.adicionarCampo = function( nomeCampo, valorDefinir ){
+				context.criarCampoEmBranco( nomeCampo );
+				vetorAmostra.setCampo( nomeCampo, valorDefinir );
+			}
 		});
 	}
 
@@ -329,6 +335,103 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
         return Analise.DataStructure(valoresUnicos.raw(), context.parametrosAdicionais);
     }
+
+	/**
+	* Cria uma nova coluna EM TODAS AS AMOSTRAS e preenche elas com null
+	*/
+	context.criarCampoEmBranco = function( nomeNovoCampo ){
+
+		if( !context.existeCampo(nomeNovoCampo) ){
+
+			//Adiciona o nome do campo na lista de campos
+			context.nomesCampos.push( nomeNovoCampo );
+
+			//Mapear o indice desse novo campo
+			context.mapearNomes();
+
+			//Para todas as amostras, preencher esse campo com null
+			context.forEach(function(indiceAmostra, amostra){
+				amostra.setCampo( nomeNovoCampo, Vectorization.Scalar(0) );
+			});
+
+			context.flexibilidade.push( 'numero' );
+
+		}
+	}
+
+	/**
+	* Criar varios campos em branco
+	* Para cada um: Cria uma nova coluna EM TODAS AS AMOSTRAS e preenche elas com null
+	*/
+	context.criarCamposEmBranco = function( camposCriar=[] ){
+
+		//Cria os campos que NÂO EXISTEM NO DataStructure atual
+		camposCriar.forEach(function( campoCriar ){
+			context.criarCampoEmBranco( campoCriar );
+		});	
+
+	}
+
+	/**
+	* MERGE:
+	*	mesclar duas DataStructure(es)
+    *
+	*	Se o ID(o campo chave) existir, todos os dados da segunda DataStructure serão acrescentados nele, e os novos campos que não existiam na DataStructure A serão criados, e em todas as outras amostras vão ficar como null.
+    *
+	*	Se o ID não existir, ele adiciona uma nova amostra com  todos os dados da segunda DataStructure, e e os novos campos que não existiam na DataStructure A serão criados, todas as outras amostras vão ficar como null.
+	*
+	* Retorna um novo DataStructure com essa junção feita
+	*/
+	context.mergeWith = function( outraDataStructure, campoChave='nome' ){
+		const resultadoMerge   = context.duplicar();
+
+		const camposEste  = context.getNomeCampos();
+
+		//Pegar os campos que tem no OUTRO DataStructure  QUE NÂO EXISTEM NO DataStructure Atual
+		const camposOutro = outraDataStructure.getNomeCampos().filter(function( nomeCampo ){ return !camposEste.includes(nomeCampo) });
+
+		//Percorrer cada amostra do outro DataStructure
+		outraDataStructure.forEach(function( indiceAmostra, amostraOutroVector, contextOutro ){
+
+			//Verifica se o campo NOME da amostra atual deste DataStructure tem exatamente o mesmo valor que o campo NOME do OUTRO DataStructure 
+			let seCorresponde = false;
+			for( let i = 0 ; i < context.linhas ; i++){
+				const amostraAtual = resultadoMerge.getAmostra(i);
+
+				if( amostraAtual.getCampo(campoChave) == amostraOutroVector.getCampo(campoChave) ){
+					seCorresponde = true; //Sinaliza que encontrou alguma correspondencia
+
+					//Para cada campo DO OUTRO QUE NÂO EXISTE NESSE 
+					//Dados que serão adicionados neste DataStructure
+					
+					camposOutro.forEach(function( campoOutro ){
+						const valorInserir = amostraOutroVector.getCampo( campoOutro );
+
+						//Adiciona o campo apenas na amostraAtual, e nas demais amostras, preenche aquele campo com null se ele não existir
+						amostraAtual.adicionarCampo( campoOutro, valorInserir );
+					});	
+
+					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
+					break;
+
+				}
+			}
+
+			//Se não encontrou nenhuma correspondencia
+			if( !seCorresponde ){
+				
+				//Cria os campos em branco
+				const camposCriar = outraDataStructure.getNomeCampos();
+				resultadoMerge.criarCamposEmBranco( camposCriar );
+
+				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
+				const camposFaltaram = camposOutro;
+				resultadoMerge.inserir( amostraOutroVector.rawProfundo().concat( camposFaltaram.map(()=>{ return 0 }) ) );
+			}
+		});
+
+		return resultadoMerge;
+	}
 
 	/**
 	* Adiciona uma nova amostrar
