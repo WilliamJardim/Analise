@@ -352,7 +352,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	/**
 	* TODO: Colocar pra ele identificar os tipos de flexibilidade e configurar corretas ao adicionar os campos e criar amostras novas 
-	* 
+	*
 	* MERGE:
 	*	mesclar duas DataStructure(es)
     *
@@ -404,8 +404,23 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				context.criarCamposEmBranco( camposCriar );
 
 				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
-				const camposFaltaram = camposOutro;
-				context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
+				//const camposFaltaram = camposOutro;
+				//context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
+
+				//Monta os campos que vai adicionar
+				const estruturaCamposAmostra = {};
+				camposEste.forEach( function(nomeCampo){ 
+					
+					if( contextOutro.existeCampo(nomeCampo) == true ){
+						estruturaCamposAmostra[nomeCampo] = amostraOutroVector.getCampo(nomeCampo).raw();
+
+					}else{
+						estruturaCamposAmostra[nomeCampo] = 0;
+					}
+					
+				});
+
+				context.inserir( estruturaCamposAmostra );
 
 				context.columns = context.content[0].length;
 				context.colunas = context.columns;
