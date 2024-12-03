@@ -351,6 +351,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* TODO: Colocar pra ele identificar os tipos de flexibilidade e configurar corretas ao adicionar os campos e criar amostras novas 
+	* 
 	* MERGE:
 	*	mesclar duas DataStructure(es)
     *
@@ -361,13 +363,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Retorna um novo DataStructure com essa junção feita
 	*/
 	context.mergeWith = function( outraDataStructure, campoChave='nome' ){
-		const resultadoMerge   = Analise.DataStructure( context.duplicar().toMatrix().raw(), {
-			campos: context.getNomeCampos(),
-			flexibilidade: context.parametrosAdicionais.flexibilidade
-		} );
-
-		//const resultadoMerge = context.duplicar();
-
+		
 		const camposEste  = context.getNomeCampos();
 
 		//Pegar os campos que tem no OUTRO DataStructure  QUE NÂO EXISTEM NO DataStructure Atual
@@ -379,9 +375,9 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			//Verifica se o campo NOME da amostra atual deste DataStructure tem exatamente o mesmo valor que o campo NOME do OUTRO DataStructure 
 			let seCorresponde = false;
 			for( let i = 0 ; i < context.linhas ; i++){
-				const amostraAtual = resultadoMerge.getAmostra(i);
+				const amostraAtual = context.getAmostra(i);
 
-				if( amostraAtual.getCampo(campoChave) == amostraOutroVector.getCampo(campoChave) ){
+				if( amostraAtual.getCampo(campoChave).raw() == amostraOutroVector.getCampo(campoChave).raw() ){
 					seCorresponde = true; //Sinaliza que encontrou alguma correspondencia
 
 					//Para cada campo DO OUTRO QUE NÂO EXISTE NESSE 
@@ -405,15 +401,18 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				
 				//Cria os campos em branco
 				const camposCriar = outraDataStructure.getNomeCampos();
-				resultadoMerge.criarCamposEmBranco( camposCriar );
+				context.criarCamposEmBranco( camposCriar );
 
 				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
 				const camposFaltaram = camposOutro;
-				resultadoMerge.inserir( amostraOutroVector.rawProfundo().concat( camposFaltaram.map(()=>{ return 0 }) ) );
+				context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
+
+				context.columns = context.content[0].length;
+				context.colunas = context.columns;
+
+				context.injetarFuncoesAmostras();
 			}
 		});
-
-		return resultadoMerge;
 	}
 
 	/**
