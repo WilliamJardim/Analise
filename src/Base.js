@@ -20,5 +20,31 @@ Analise.Base = function( config, parametrosAdicionais={} ){
         }
     }
 
+    context.downloadArquivo = function(data, filename='dados.json'){
+        // Verifica se o data é um objeto; se não for, assume que já é JSON válido.
+        const jsonData = typeof data === "object" ? JSON.stringify(data, null, 2) : data;
+
+        // Cria um blob com os dados JSON.
+        const blob = new Blob([jsonData], { type: "application/json" });
+
+        // Cria uma URL temporária para o blob.
+        const url = URL.createObjectURL(blob);
+
+        // Cria um elemento <a> para disparar o download.
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+
+        // Adiciona o elemento <a> ao DOM e simula um clique.
+        document.body.appendChild(a);
+        a.click();
+
+        // Remove o elemento <a> do DOM.
+        document.body.removeChild(a);
+
+        // Revoga a URL temporária.
+        URL.revokeObjectURL(url);
+    }
+
     return context;
 }

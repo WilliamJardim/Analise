@@ -69,6 +69,35 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			break;
 	}
 
+	/**
+	* Exporta os dados deste DataStructure para um formato JSON
+	*/
+	context.exportarJSON = function( downloadArquivo=null ){
+		const dadosConvertidos = [];
+
+		//Percorre cada amostra
+		context.forEach(function( indiceElemento, amostraVector, contexto ){
+			const estruturaCamposAmostra = {};
+			
+			//Obtem os valores dos campos para a amostra atual
+			context.nomesCampos.forEach(function(nomeCampo){
+
+				estruturaCamposAmostra[nomeCampo] = amostraVector.getCampo( nomeCampo )
+				                                                 .raw();
+
+			});
+
+			//Adiciona os dados JSON da amostra atual na lista
+			dadosConvertidos.push(estruturaCamposAmostra);
+		});
+
+		if(downloadArquivo && downloadArquivo.endswith('.json') ){
+			context.downloadArquivo( dadosConvertidos , downloadArquivo );
+		}
+
+		return dadosConvertidos;
+	}
+
 	context.mapearNomes = function(){
 		/**
 		* Transforma nomes dos campos em indices e isso pode ser usado pelo método getColunaCampo para obter o Vector que contém os dados da coluna cujo nome é TAL
