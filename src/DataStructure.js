@@ -309,14 +309,17 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	/** 
 	* @override
     * Remove amostras duplicadas deste Vectorization.Matrix com base em colunas específicas.
+	* @param {String[]} nomeCampos - Os campos especificos que serão usados nessa verificação. Se não passar nada, ele ignora e usa todos
     */
-    context.distinct = function(){
+    context.distinct = function( nomeCampos=null ){
         const valoresJaVistos = {};
         const valoresUnicos = Vectorization.Matrix([], context.parametrosAdicionais);
 
         context.forEach(function(indice, linhaVector){
-            const identificador = linhaVector.raw()
-                                             .join('|');
+            const identificador = (
+				                   nomeCampos != null ? nomeCampos.map(function( nomeCampo ){ return linhaVector.getCampo( nomeCampo ) }) 
+			                                          : linhaVector.raw()
+								  ).join('|');
 
             if( valoresJaVistos[identificador] == undefined ){
                 valoresJaVistos[identificador] = true;
