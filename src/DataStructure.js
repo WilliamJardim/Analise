@@ -43,6 +43,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
     const context = Analise.Base(dadosIniciais_tratados, parametrosAdicionais);
 	
+	context.idObjeto = new Date().getTime();
+
 	context.tipoDadosIniciais = tipoDadosIniciais;
 	context.keysIdentificadas = [];
 
@@ -221,7 +223,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Verifica se um campo existe ou não 
 	*/
 	context.existeCampo = function( nomeCampo ){
-		return dataset.mapaCampos[ nomeCampo ] != undefined;
+		return context.mapaCampos[ nomeCampo ] != undefined;
 	}
 
 	/**
@@ -250,32 +252,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     * @returns {Analise.DataStructure}
     */
     context.duplicar = function(){
-        let novaMatrix = [];
-        let novaMatrix_Matrix = null; //Se for necessario
-
-        if( context.isFlexivelNasColunas == true ){
-            //Nesse caso foi necessario usar o novaMatrix_Matrix como Vectorization.Matrix
-            novaMatrix_Matrix = Vectorization.Matrix([], {
-                flexibilidade: context.flexivel
-            });
-        }
-
-        for( let i = 0 ; i < context.rows ; i++ )
-        {
-            if( context.isFlexivelNasColunas == false ){
-                novaMatrix.push( Vectorization.Vector(context.getLinha(i)).clonar() );
-
-            }else{
-                novaMatrix_Matrix.adicionarVetorComoColuna( Vectorization.BendableVector(context.getLinha(i), {
-                    flexibilidade: context.flexivel
-                }).clonar() );
-            }
-        }
-
-        const dadosMatrix = context.isFlexivelNasColunas == false ? Vectorization.Matrix(novaMatrix).raw() : 
-                                                                    novaMatrix_Matrix.raw();
-
-		return Analise.DataStructure(dadosMatrix, 
+    
+		return Analise.DataStructure( context.toMatrix().duplicar().raw(), 
 									{
 			                          campos: context.nomesCampos, 
 									  flexibilidade: context.flexibilidade 
@@ -383,7 +361,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Retorna um novo DataStructure com essa junção feita
 	*/
 	context.mergeWith = function( outraDataStructure, campoChave='nome' ){
-		const resultadoMerge   = context.duplicar();
+		const resultadoMerge   = Analise.DataStructure( context.duplicar().toMatrix().raw(), {
+			campos: context.getNomeCampos(),
+			flexibilidade: context.parametrosAdicionais.flexibilidade
+		} );
+
+		//const resultadoMerge = context.duplicar();
 
 		const camposEste  = context.getNomeCampos();
 
@@ -497,7 +480,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 			});
 
-			dataset.atualizarQuantidadeColunasLinhas();
+			context.atualizarQuantidadeColunasLinhas();
 		}
 
 	}
