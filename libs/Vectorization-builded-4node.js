@@ -13,7 +13,7 @@ if(typeof window === 'undefined'){
     window.VECTORIZATION_BUILD_TYPE = 'navegador';
 }
 
-/* COMPILADO: 3/12/2024 - 14:11:14*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
+/* COMPILADO: 3/12/2024 - 21:45:08*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
 /*
  * File Name: Root.js
  * Author Name: William Alves Jardim
@@ -5034,7 +5034,13 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
         }
 
         if( context.isAdvancedMatrix ){
-            context.content.push( element.objectName != undefined && element.objectName == 'Vector' ? element : Vectorization.Vector(element) );
+            if( context.isFlexivelNasColunas == true ){
+                context.content.push( element.objectName != undefined && element.objectName == 'Vector' ? element : Vectorization.BendableVector(element, context._config) );
+
+            //Se não tem flexibilidade
+            }else{
+                context.content.push( element.objectName != undefined && element.objectName == 'Vector' ? element : Vectorization.Vector(element) );
+            }
 
         }else{
             context.content.push(element);
@@ -6780,6 +6786,96 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
 
         let confereSePodeMexe = listaAtributosProtegidos.indexOf(nomeAtributo) != -1;
         return confereSePodeMexe == true ? true : false;
+    }
+
+    /** EXPORTAÇÂO DE DADOS  */
+
+    /**
+    * Método auxiliar para fazer download do arquivo CSV.
+    * @param {string} conteudo Conteúdo do arquivo.
+    * @param {string} nomeArquivo Nome do arquivo.
+    */
+    context.downloadArquivo = function(conteudo, nomeArquivo) {
+        const blob = new Blob([conteudo], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nomeArquivo;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+    * Exporta os dados de um objeto Vectorization.Matrix para um formato CSV com separador configurável.
+    * @param {string|null} downloadArquivo Nome do arquivo para download (opcional).
+    * @param {string} separador Separador de colunas (padrão: ',').
+    * @returns {string} Conteúdo do CSV.
+    */
+    context.exportarCSV = function(downloadArquivo = null, separador = ',') {
+        let csvConteudo = '';
+
+        // Gera a linha de cabeçalho
+        //const linhaCabecalho = Array(context.colunas).fill(0).map((_, index) => `Coluna_${index}`).join(separador);
+        //csvConteudo += linhaCabecalho + '\n';
+
+        // Percorre cada linha da matriz
+        context.content.forEach(linha => {
+            const linhaValores = linha.map( (indice, valor) => {
+                // Escapa valores que contêm o separador ou aspas
+                if (typeof valor === 'string' && (valor.includes(separador) || valor.includes('"'))) {
+                    return `"${valor.replace(/"/g, '""')}"`;
+                }
+                return valor;
+            }).raw().join(separador);
+
+            // Adiciona a linha atual ao conteúdo do CSV
+            csvConteudo += linhaValores + '\n';
+        });
+
+        //Corta o \n sozinho no final
+        if( csvConteudo.endsWith('\n') ){
+            csvConteudo = csvConteudo.slice(0, csvConteudo.length-String('\n').length);
+        }
+
+        // Faz o download do arquivo, se solicitado
+        if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
+            context.downloadArquivo(csvConteudo, downloadArquivo);
+        }
+
+        return csvConteudo;
+    }
+
+    /**
+    * Exporta os dados de um objeto Vectorization.Matrix para um formato TXT com separador configurável.
+    * @param {string|null} downloadArquivo Nome do arquivo para download (opcional).
+    * @param {string} separador Separador entre valores (padrão: tabulação '\t').
+    * @returns {string} Conteúdo do TXT.
+    */
+    context.exportarTXT = function(downloadArquivo = null, separador = '\t') {
+        let txtConteudo = '';
+
+        // Gera as linhas do conteúdo TXT
+        context.content.forEach(linha => {
+            const linhaValores = linha.map( (indice, valor) => {
+                // Formata o valor, se necessário
+                if (typeof valor === 'string' && (valor.includes(separador) || valor.includes('"'))) {
+                    return `"${valor.replace(/"/g, '""')}"`;
+                }
+                return valor;
+            }).raw().join(separador);
+
+            // Adiciona a linha ao conteúdo do TXT
+            txtConteudo += linhaValores + '\n';
+        });
+
+        // Faz o download do arquivo, se solicitado
+        if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
+            context.downloadArquivo(txtConteudo, downloadArquivo);
+        }
+
+        return txtConteudo;
     }
 
     //return context;
