@@ -285,6 +285,17 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				context.criarCampoEmBranco( nomeCampo );
 				vetorAmostra.setCampo( nomeCampo, valorDefinir );
 			}
+
+			//Converte a amostra para JSON
+			vetorAmostra.toJSON = function(){
+				const estruturaCamposAmostra = {};
+
+				context.getNomeCampos().forEach( function(nomeCampo){ 
+					estruturaCamposAmostra[nomeCampo] = vetorAmostra.getCampo(nomeCampo).raw();
+				});
+
+				return estruturaCamposAmostra;
+			}
 		});
 	}
 
