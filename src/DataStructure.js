@@ -101,6 +101,42 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Exporta os dados deste DataStructure para um formato CSV com separador configurável
+	* @param {string|null} downloadArquivo Nome do arquivo para download (opcional)
+	* @param {string} separador Separador de colunas (padrão: ',')
+	*/
+	context.exportarCSV = function(downloadArquivo = null, separador = ',') {
+		let csvConteudo = '';
+
+		// Gera a linha de cabeçalho (nomes dos campos)
+		const linhaCabecalho = context.nomesCampos.join(separador);
+		csvConteudo += linhaCabecalho + '\n';
+
+		// Percorre cada amostra
+		context.forEach(function(indiceElemento, amostraVector, contexto) {
+			const linhaValores = context.nomesCampos.map(function(nomeCampo) {
+				const valorCampo = amostraVector.getCampo(nomeCampo).raw();
+
+				// Escapa valores que contêm o separador ou aspas
+				if (typeof valorCampo === 'string' && (valorCampo.includes(separador) || valorCampo.includes('"'))) {
+					return `"${valorCampo.replace(/"/g, '""')}"`;
+				}
+				return valorCampo;
+			}).join(separador);
+
+			// Adiciona a linha atual ao conteúdo do CSV
+			csvConteudo += linhaValores + '\n';
+		});
+
+		// Faz o download do arquivo, se solicitado
+		if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
+			context.downloadArquivo(csvConteudo, downloadArquivo);
+		}
+
+		return csvConteudo;
+	}
+
+	/**
 	* Carrega um arquivo JSON do computador via upload e depois injeta dentro deste DataStructure
 	* @param {Function} callback 
 	*/
@@ -183,6 +219,88 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		// Adiciona o elemento de input ao DOM para que possa ser utilizado
 		document.body.appendChild(inputFile);
 	
+		// Simula um clique no input para abrir a janela de seleção de arquivo
+		inputFile.click();
+	}
+
+	/**
+	* Carrega um arquivo CSV do computador via upload e injeta dentro deste DataStructure
+	* @param {Function} callback
+	* @param {string} separador Separador usado no CSV (padrão: ',')
+	*/
+	context.loadCSV = function(callback, separador = ',') {
+		// Cria dinamicamente o elemento <input> do tipo "file"
+		const inputFile = document.createElement("input");
+		inputFile.type = "file";
+		inputFile.accept = ".csv"; // Aceita apenas arquivos CSV
+
+		// Adiciona o evento "change" para capturar o arquivo selecionado
+		inputFile.addEventListener("change", function(event) {
+			const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+
+			if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+
+			const reader = new FileReader();
+
+			// Lê o conteúdo do arquivo como texto
+			reader.onload = function() {
+				try {
+					const csvData = reader.result;
+
+					// Divide as linhas do CSV
+					const linhas = csvData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+
+					// Extrai os cabeçalhos (primeira linha)
+					const nomesCampos = linhas[0].split(separador).map(campo => campo.trim());
+
+					// Processa os dados (demais linhas)
+					const dadosTratados = linhas.slice(1).map(linha => {
+						const valores = linha.split(separador).map(valor => valor.trim());
+
+						// Gera um objeto chave-valor com base nos cabeçalhos
+						const amostra = {};
+						nomesCampos.forEach((nome, index) => {
+							amostra[nome] = valores[index] || null; // Lida com campos vazios
+						});
+
+						return amostra;
+					});
+
+					// Atualiza os dados do DataStructure
+					context.nomesCampos = nomesCampos;
+					context.keysIdentificadas = nomesCampos;
+					context.content = dadosTratados.map(amostra =>
+						Object.values(amostra)
+					);
+					context._matrix2Advanced();
+					context.mapearNomes();
+					context.atualizarQuantidadeColunasLinhas();
+
+					context.columns = context.content[0]?.length || 0;
+					context.colunas = context.columns;
+
+					context.injetarFuncoesAmostras();
+
+					if (callback) {
+						// Chama o callback com os dados CSV
+						callback(dadosTratados, context);
+					}
+				} catch (error) {
+					console.error("Erro ao carregar o arquivo CSV:", error);
+					alert("O arquivo selecionado não é um CSV válido.");
+				}
+			};
+
+			// Lê o arquivo
+			reader.readAsText(file);
+
+			// Remove o elemento de input do DOM após a leitura
+			document.body.removeChild(inputFile);
+		});
+
+		// Adiciona o elemento de input ao DOM para que possa ser utilizado
+		document.body.appendChild(inputFile);
+
 		// Simula um clique no input para abrir a janela de seleção de arquivo
 		inputFile.click();
 	}
