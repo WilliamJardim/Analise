@@ -93,8 +93,14 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			dadosConvertidos.push(estruturaCamposAmostra);
 		});
 
-		if(downloadArquivo && downloadArquivo.endsWith('.json') ){
-			context.downloadArquivo( dadosConvertidos , downloadArquivo );
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+				context.downloadArquivo( dadosConvertidos , downloadArquivo );
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
 		}
 
 		return dadosConvertidos;
@@ -133,9 +139,15 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
             csvConteudo = csvConteudo.slice(0, csvConteudo.length-String('\n').length);
         }
 
-		// Faz o download do arquivo, se solicitado
-		if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
-			context.downloadArquivo(csvConteudo, downloadArquivo);
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Faz o download do arquivo, se solicitado
+			if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
+				context.downloadArquivo(csvConteudo, downloadArquivo);
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
 		}
 
 		return csvConteudo;
@@ -175,9 +187,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
             txtConteudo = txtConteudo.slice(0, txtConteudo.length-String('\n').length);
         }
 
-		// Faz o download do arquivo, se solicitado
-		if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
-			context.downloadArquivo(txtConteudo, downloadArquivo);
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Faz o download do arquivo, se solicitado
+			if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
+				context.downloadArquivo(txtConteudo, downloadArquivo);
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+
+
 		}
 
 		return txtConteudo;
@@ -188,86 +207,93 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* @param {Function} callback 
 	*/
 	context.loadJSON = function(callback) {
-		// Cria dinamicamente o elemento <input> do tipo "file"
-		const inputFile = document.createElement("input");
-		inputFile.type = "file";
-		inputFile.accept = ".json"; // Aceita apenas arquivos JSON
-	
-		// Adiciona o evento "change" para capturar o arquivo selecionado
-		inputFile.addEventListener("change", function (event) {
-			const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
-	
-			if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
-	
-			const reader = new FileReader();
-	
-			// Lê o conteúdo do arquivo como texto
-			reader.onload = function () {
-				try {
-					// Parseia o conteúdo do arquivo para JSON
-					const jsonData = JSON.parse(reader.result);
-					
-					//Para cada amostra
-					const dados_tratados = [];
-					const map_keysIdentificadas_tratado = {};
 
-					for( let i = 0 ; i < jsonData.length ; i++ )
-					{
-						//Extrai as informações
-						const amostraJSON     = jsonData[i];
-						const keysAmostra     = Object.keys(amostraJSON);
-			
-						//Vai salvando as chaves no mapa de chaves identificadas
-						keysAmostra.forEach(function(chave){
-							map_keysIdentificadas_tratado[chave] = true;
-						});
-			
-						const valoresAmostra  = Object.values(amostraJSON);
-			
-						//Joga os dados da amostra no Array
-						dados_tratados.push(valoresAmostra);
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Cria dinamicamente o elemento <input> do tipo "file"
+			const inputFile = document.createElement("input");
+			inputFile.type = "file";
+			inputFile.accept = ".json"; // Aceita apenas arquivos JSON
+		
+			// Adiciona o evento "change" para capturar o arquivo selecionado
+			inputFile.addEventListener("change", function (event) {
+				const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+		
+				if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+		
+				const reader = new FileReader();
+		
+				// Lê o conteúdo do arquivo como texto
+				reader.onload = function () {
+					try {
+						// Parseia o conteúdo do arquivo para JSON
+						const jsonData = JSON.parse(reader.result);
+						
+						//Para cada amostra
+						const dados_tratados = [];
+						const map_keysIdentificadas_tratado = {};
+
+						for( let i = 0 ; i < jsonData.length ; i++ )
+						{
+							//Extrai as informações
+							const amostraJSON     = jsonData[i];
+							const keysAmostra     = Object.keys(amostraJSON);
+				
+							//Vai salvando as chaves no mapa de chaves identificadas
+							keysAmostra.forEach(function(chave){
+								map_keysIdentificadas_tratado[chave] = true;
+							});
+				
+							const valoresAmostra  = Object.values(amostraJSON);
+				
+							//Joga os dados da amostra no Array
+							dados_tratados.push(valoresAmostra);
+						}
+
+						//Se os campos não existem neste DataStructure, cria
+						context.keysIdentificadas = Object.keys( map_keysIdentificadas_tratado );
+						context.nomesCampos       = context.keysIdentificadas;
+
+						context.content = dados_tratados;
+						context._matrix2Advanced();
+						context.mapearNomes();
+						context.atualizarQuantidadeColunasLinhas();
+
+						//Atualiza a quantidade das colunas
+						//Como é um JSON, vai precisar calcular de forma diferente as colunas
+						context.columns = context.content[0].length;
+						context.colunas = context.columns;
+
+						context.injetarFuncoesAmostras();
+
+						if(callback)
+						{
+							// Chama o callback com os dados JSON
+							callback(jsonData, context);
+						}
+
+					} catch (error) {
+						console.error("Erro ao carregar o arquivo JSON:", error);
+						alert("O arquivo selecionado não é um JSON válido.");
 					}
+				};
+		
+				// Lê o arquivo
+				reader.readAsText(file);
+		
+				// Remove o elemento de input do DOM após a leitura
+				document.body.removeChild(inputFile);
+			});
+		
+			// Adiciona o elemento de input ao DOM para que possa ser utilizado
+			document.body.appendChild(inputFile);
+		
+			// Simula um clique no input para abrir a janela de seleção de arquivo
+			inputFile.click();
 
-					//Se os campos não existem neste DataStructure, cria
-					context.keysIdentificadas = Object.keys( map_keysIdentificadas_tratado );
-					context.nomesCampos       = context.keysIdentificadas;
-
-					context.content = dados_tratados;
-					context._matrix2Advanced();
-					context.mapearNomes();
-					context.atualizarQuantidadeColunasLinhas();
-
-					//Atualiza a quantidade das colunas
-					//Como é um JSON, vai precisar calcular de forma diferente as colunas
-					context.columns = context.content[0].length;
-					context.colunas = context.columns;
-
-					context.injetarFuncoesAmostras();
-
-					if(callback)
-					{
-						// Chama o callback com os dados JSON
-						callback(jsonData, context);
-					}
-
-				} catch (error) {
-					console.error("Erro ao carregar o arquivo JSON:", error);
-					alert("O arquivo selecionado não é um JSON válido.");
-				}
-			};
-	
-			// Lê o arquivo
-			reader.readAsText(file);
-	
-			// Remove o elemento de input do DOM após a leitura
-			document.body.removeChild(inputFile);
-		});
-	
-		// Adiciona o elemento de input ao DOM para que possa ser utilizado
-		document.body.appendChild(inputFile);
-	
-		// Simula um clique no input para abrir a janela de seleção de arquivo
-		inputFile.click();
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+			
+		}
 	}
 
 	/**
@@ -276,80 +302,87 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* @param {string} separador Separador usado no CSV (padrão: ',')
 	*/
 	context.loadCSV = function(callback, separador = ',') {
-		// Cria dinamicamente o elemento <input> do tipo "file"
-		const inputFile = document.createElement("input");
-		inputFile.type = "file";
-		inputFile.accept = ".csv"; // Aceita apenas arquivos CSV
 
-		// Adiciona o evento "change" para capturar o arquivo selecionado
-		inputFile.addEventListener("change", function(event) {
-			const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Cria dinamicamente o elemento <input> do tipo "file"
+			const inputFile = document.createElement("input");
+			inputFile.type = "file";
+			inputFile.accept = ".csv"; // Aceita apenas arquivos CSV
 
-			if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+			// Adiciona o evento "change" para capturar o arquivo selecionado
+			inputFile.addEventListener("change", function(event) {
+				const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
 
-			const reader = new FileReader();
+				if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
 
-			// Lê o conteúdo do arquivo como texto
-			reader.onload = function() {
-				try {
-					const csvData = reader.result;
+				const reader = new FileReader();
 
-					// Divide as linhas do CSV
-					const linhas = csvData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+				// Lê o conteúdo do arquivo como texto
+				reader.onload = function() {
+					try {
+						const csvData = reader.result;
 
-					// Extrai os cabeçalhos (primeira linha)
-					const nomesCampos = linhas[0].split(separador).map(campo => campo.trim());
+						// Divide as linhas do CSV
+						const linhas = csvData.split(/\r?\n/).filter(linha => linha.trim() !== '');
 
-					// Processa os dados (demais linhas)
-					const dadosTratados = linhas.slice(1).map(linha => {
-						const valores = linha.split(separador).map(valor => valor.trim());
+						// Extrai os cabeçalhos (primeira linha)
+						const nomesCampos = linhas[0].split(separador).map(campo => campo.trim());
 
-						// Gera um objeto chave-valor com base nos cabeçalhos
-						const amostra = {};
-						nomesCampos.forEach((nome, index) => {
-							amostra[nome] = valores[index] || null; // Lida com campos vazios
+						// Processa os dados (demais linhas)
+						const dadosTratados = linhas.slice(1).map(linha => {
+							const valores = linha.split(separador).map(valor => valor.trim());
+
+							// Gera um objeto chave-valor com base nos cabeçalhos
+							const amostra = {};
+							nomesCampos.forEach((nome, index) => {
+								amostra[nome] = valores[index] || null; // Lida com campos vazios
+							});
+
+							return amostra;
 						});
 
-						return amostra;
-					});
+						// Atualiza os dados do DataStructure
+						context.nomesCampos = nomesCampos;
+						context.keysIdentificadas = nomesCampos;
+						context.content = dadosTratados.map(amostra =>
+							Object.values(amostra)
+						);
+						context._matrix2Advanced();
+						context.mapearNomes();
+						context.atualizarQuantidadeColunasLinhas();
 
-					// Atualiza os dados do DataStructure
-					context.nomesCampos = nomesCampos;
-					context.keysIdentificadas = nomesCampos;
-					context.content = dadosTratados.map(amostra =>
-						Object.values(amostra)
-					);
-					context._matrix2Advanced();
-					context.mapearNomes();
-					context.atualizarQuantidadeColunasLinhas();
+						context.columns = context.content[0]?.length || 0;
+						context.colunas = context.columns;
 
-					context.columns = context.content[0]?.length || 0;
-					context.colunas = context.columns;
+						context.injetarFuncoesAmostras();
 
-					context.injetarFuncoesAmostras();
-
-					if (callback) {
-						// Chama o callback com os dados CSV
-						callback(dadosTratados, context);
+						if (callback) {
+							// Chama o callback com os dados CSV
+							callback(dadosTratados, context);
+						}
+					} catch (error) {
+						console.error("Erro ao carregar o arquivo CSV:", error);
+						alert("O arquivo selecionado não é um CSV válido.");
 					}
-				} catch (error) {
-					console.error("Erro ao carregar o arquivo CSV:", error);
-					alert("O arquivo selecionado não é um CSV válido.");
-				}
-			};
+				};
 
-			// Lê o arquivo
-			reader.readAsText(file);
+				// Lê o arquivo
+				reader.readAsText(file);
 
-			// Remove o elemento de input do DOM após a leitura
-			document.body.removeChild(inputFile);
-		});
+				// Remove o elemento de input do DOM após a leitura
+				document.body.removeChild(inputFile);
+			});
 
-		// Adiciona o elemento de input ao DOM para que possa ser utilizado
-		document.body.appendChild(inputFile);
+			// Adiciona o elemento de input ao DOM para que possa ser utilizado
+			document.body.appendChild(inputFile);
 
-		// Simula um clique no input para abrir a janela de seleção de arquivo
-		inputFile.click();
+			// Simula um clique no input para abrir a janela de seleção de arquivo
+			inputFile.click();
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+
+		}
 	}
 
 	/**
@@ -358,80 +391,88 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* @param {string} separador Separador usado no TXT (padrão: '\t').
 	*/
 	context.loadTXT = function(callback, separador = '\t') {
-		// Cria dinamicamente o elemento <input> do tipo "file"
-		const inputFile = document.createElement("input");
-		inputFile.type = "file";
-		inputFile.accept = ".txt"; // Aceita apenas arquivos TXT
 
-		// Adiciona o evento "change" para capturar o arquivo selecionado
-		inputFile.addEventListener("change", function(event) {
-			const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
 
-			if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+			// Cria dinamicamente o elemento <input> do tipo "file"
+			const inputFile = document.createElement("input");
+			inputFile.type = "file";
+			inputFile.accept = ".txt"; // Aceita apenas arquivos TXT
 
-			const reader = new FileReader();
+			// Adiciona o evento "change" para capturar o arquivo selecionado
+			inputFile.addEventListener("change", function(event) {
+				const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
 
-			// Lê o conteúdo do arquivo como texto
-			reader.onload = function() {
-				try {
-					const txtData = reader.result;
+				if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
 
-					// Divide as linhas do TXT
-					const linhas = txtData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+				const reader = new FileReader();
 
-					// Extrai os cabeçalhos (primeira linha)
-					const nomesCampos = linhas[0].split(separador).map(campo => campo.trim());
+				// Lê o conteúdo do arquivo como texto
+				reader.onload = function() {
+					try {
+						const txtData = reader.result;
 
-					// Processa os dados (demais linhas)
-					const dadosTratados = linhas.slice(1).map(linha => {
-						const valores = linha.split(separador).map(valor => valor.trim());
+						// Divide as linhas do TXT
+						const linhas = txtData.split(/\r?\n/).filter(linha => linha.trim() !== '');
 
-						// Gera um objeto chave-valor com base nos cabeçalhos
-						const amostra = {};
-						nomesCampos.forEach((nome, index) => {
-							amostra[nome] = valores[index] || null; // Lida com campos vazios
+						// Extrai os cabeçalhos (primeira linha)
+						const nomesCampos = linhas[0].split(separador).map(campo => campo.trim());
+
+						// Processa os dados (demais linhas)
+						const dadosTratados = linhas.slice(1).map(linha => {
+							const valores = linha.split(separador).map(valor => valor.trim());
+
+							// Gera um objeto chave-valor com base nos cabeçalhos
+							const amostra = {};
+							nomesCampos.forEach((nome, index) => {
+								amostra[nome] = valores[index] || null; // Lida com campos vazios
+							});
+
+							return amostra;
 						});
 
-						return amostra;
-					});
+						// Atualiza os dados do DataStructure
+						context.nomesCampos = nomesCampos;
+						context.keysIdentificadas = nomesCampos;
+						context.content = dadosTratados.map(amostra =>
+							Object.values(amostra)
+						);
+						context._matrix2Advanced();
+						context.mapearNomes();
+						context.atualizarQuantidadeColunasLinhas();
 
-					// Atualiza os dados do DataStructure
-					context.nomesCampos = nomesCampos;
-					context.keysIdentificadas = nomesCampos;
-					context.content = dadosTratados.map(amostra =>
-						Object.values(amostra)
-					);
-					context._matrix2Advanced();
-					context.mapearNomes();
-					context.atualizarQuantidadeColunasLinhas();
+						context.columns = context.content[0]?.length || 0;
+						context.colunas = context.columns;
 
-					context.columns = context.content[0]?.length || 0;
-					context.colunas = context.columns;
+						context.injetarFuncoesAmostras();
 
-					context.injetarFuncoesAmostras();
-
-					if (callback) {
-						// Chama o callback com os dados TXT
-						callback(dadosTratados, context);
+						if (callback) {
+							// Chama o callback com os dados TXT
+							callback(dadosTratados, context);
+						}
+					} catch (error) {
+						console.error("Erro ao carregar o arquivo TXT:", error);
+						alert("O arquivo selecionado não é um TXT válido.");
 					}
-				} catch (error) {
-					console.error("Erro ao carregar o arquivo TXT:", error);
-					alert("O arquivo selecionado não é um TXT válido.");
-				}
-			};
+				};
 
-			// Lê o arquivo
-			reader.readAsText(file);
+				// Lê o arquivo
+				reader.readAsText(file);
 
-			// Remove o elemento de input do DOM após a leitura
-			document.body.removeChild(inputFile);
-		});
+				// Remove o elemento de input do DOM após a leitura
+				document.body.removeChild(inputFile);
+			});
 
-		// Adiciona o elemento de input ao DOM para que possa ser utilizado
-		document.body.appendChild(inputFile);
+			// Adiciona o elemento de input ao DOM para que possa ser utilizado
+			document.body.appendChild(inputFile);
 
-		// Simula um clique no input para abrir a janela de seleção de arquivo
-		inputFile.click();
+			// Simula um clique no input para abrir a janela de seleção de arquivo
+			inputFile.click();
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+
+		}
 	}
 
 	context.mapearNomes = function(){
