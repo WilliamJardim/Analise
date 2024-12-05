@@ -1,6 +1,8 @@
 Analise = {};
 
-Analise.Vectorization = window.Vectorization;
+Analise.libs = {
+    Vectorization: window.Vectorization
+};
 
 Analise.Base = function( config, parametrosAdicionais={} ){
     const context = Vectorization.Matrix(config, parametrosAdicionais);
