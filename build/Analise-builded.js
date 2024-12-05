@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 4/12/2024 - 21:12:33*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 4/12/2024 - 21:15:19*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -7585,6 +7585,8 @@ window.iscompilation = true
 /* FIM DO ARQUIVO: ../libs/Vectorization-builded.js*/
 /* ARQUIVO: ../src/Base.js*/
 Analise = {};
+
+Analise.Vectorization = window.Vectorization;
 
 Analise.Base = function( config, parametrosAdicionais={} ){
     const context = Vectorization.Matrix(config, parametrosAdicionais);
