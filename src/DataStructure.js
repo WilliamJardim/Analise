@@ -851,6 +851,21 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Exporta os dados para um JSON que contém ARRAYS para os dados das colunas
+	*/
+	context.exportarJSON_colunas = function(){
+		
+		const dadosJSON_ARRAY = {};
+
+		context.getNomeCampos().forEach(function(nomeCampo){
+			const dadosCampo = context.extrairValoresCampo(nomeCampo).rawProfundo();
+			dadosJSON_ARRAY[nomeCampo] = dadosCampo;
+		});
+
+		return dadosJSON_ARRAY;
+	}
+
+	/**
 	* Converte este DataStructure em um Vectorization.Matrix
 	* @returns {Matrix} - Um novo objeto Matrix contendo os dados do DataStructure.
 	* @returns 
