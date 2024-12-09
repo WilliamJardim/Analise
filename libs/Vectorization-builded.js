@@ -13,7 +13,7 @@ if(typeof window === 'undefined'){
     window.VECTORIZATION_BUILD_TYPE = 'navegador';
 }
 
-/* COMPILADO: 3/12/2024 - 22:01:10*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
+/* COMPILADO: 9/12/2024 - 14:59:59*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
 /*
  * File Name: Root.js
  * Author Name: William Alves Jardim
@@ -382,6 +382,38 @@ window.Vectorization.isAlgumVetorVectorization = function(obj){
 }
 
 module.exports = window.Vectorization.Root;
+
+//Cria uma namespace para calculos matemáticos basicos
+window.Vectorization.Math = {};
+
+window.Vectorization.Math.log = function(base, valor){
+    return Math.log(valor) / Math.log(base)
+}
+
+window.Vectorization.Math.log2 = function(valor){
+    return Math.log2(valor);
+}
+
+window.Vectorization.Math.log10 = function(valor){
+    return Math.log10(valor);
+}
+
+window.Vectorization.Math.sin = function(radians){
+    return Math.sin(radians);
+}
+
+window.Vectorization.Math.cos = function(radians){
+    return Math.cos(radians);
+}
+
+window.Vectorization.Math.pow = function(base, exponente){
+    return Math.pow(base, exponente);
+}
+
+//Cria um alias para facilitar a chamada
+if( typeof V == 'undefined' ){
+    window.V = window.Vectorization;
+}
 /* FIM DO ARQUIVO VECTORIZATION: ../src/Root.js*/
 /* ARQUIVO VECTORIZATION: ../src/Utilidades.js*/
 /*
@@ -3104,6 +3136,21 @@ window.Vectorization.Vector = function( config=[], classConfig={} ){
         for( let i = 0 ; i < context.content.length ; i++ )
         {
             novoVetor[i] = Math.log2(context.content[i]);
+        }
+
+        return Vectorization.Vector(novoVetor);
+    }
+
+    /**
+    * Obtem o log10 de cada elemento do vetor
+    * @returns {Vectorization.Vector}
+    */
+    context.log10 = function(){
+        let novoVetor = [];
+        
+        for( let i = 0 ; i < context.content.length ; i++ )
+        {
+            novoVetor[i] = Math.log10(context.content[i]);
         }
 
         return Vectorization.Vector(novoVetor);
@@ -6211,6 +6258,26 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
     }
 
     /**
+     * Obtem o log10, de cada elemento da matrix 
+     * @returns {Vectorization.Matrix}
+     */
+    context.log10 = function(){
+        let matrixA = context.content;
+        let novaMatrix = [];
+    
+        for( let i = 0 ; i < matrixA.length ; i++ )
+        {
+            novaMatrix[i] = [];
+            for( let j = 0 ; j < matrixA[0].length ; j++ )
+            {
+                novaMatrix[i][j] = Math.log10(matrixA[i][j]);
+            }
+        }
+    
+        return Vectorization.Matrix(novaMatrix);
+    }
+
+    /**
     * Tenta obter a matrix de identidade de ordem desta matrix 
     */
     context.identidade = function(){
@@ -6796,15 +6863,19 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
     * @param {string} nomeArquivo Nome do arquivo.
     */
     context.downloadArquivo = function(conteudo, nomeArquivo) {
-        const blob = new Blob([conteudo], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = nomeArquivo;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+
+            const blob = new Blob([conteudo], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+        }
     }
 
     /**
@@ -6839,9 +6910,15 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
             csvConteudo = csvConteudo.slice(0, csvConteudo.length-String('\n').length);
         }
 
-        // Faz o download do arquivo, se solicitado
-        if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
-            context.downloadArquivo(csvConteudo, downloadArquivo);
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            // Faz o download do arquivo, se solicitado
+            if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
+                context.downloadArquivo(csvConteudo, downloadArquivo);
+            }
+
+        //Se for node
+        }if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
         }
 
         return csvConteudo;
@@ -6875,9 +6952,15 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
             txtConteudo = txtConteudo.slice(0, txtConteudo.length-String('\n').length);
         }
 
-        // Faz o download do arquivo, se solicitado
-        if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
-            context.downloadArquivo(txtConteudo, downloadArquivo);
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            // Faz o download do arquivo, se solicitado
+            if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
+                context.downloadArquivo(txtConteudo, downloadArquivo);
+            }
+
+        //Se for node
+        }else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
         }
 
         return txtConteudo;
@@ -6888,11 +6971,168 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
 	*/
 	context.exportarJSON = function( downloadArquivo=null ){
 		
-		if(downloadArquivo && downloadArquivo.endsWith('.json') ){
-			context.downloadArquivo( context.raw() , downloadArquivo );
-		}
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+                context.downloadArquivo( context.raw() , downloadArquivo );
+            }
+
+        //Se for node
+        }if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+            
+        }
 
 		return context.raw();
+	}
+
+    /** IMPORTAR DADOS */
+
+	/**
+	* Carrega um arquivo CSV do computador via upload e injeta dentro deste DataStructure
+	* @param {Function} callback
+	* @param {string} separador Separador usado no CSV (padrão: ',')
+	*/
+	context.loadCSV = function(callback, separador = ',') {
+
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            // Cria dinamicamente o elemento <input> do tipo "file"
+            const inputFile = document.createElement("input");
+            inputFile.type = "file";
+            inputFile.accept = ".csv"; // Aceita apenas arquivos CSV
+
+            // Adiciona o evento "change" para capturar o arquivo selecionado
+            inputFile.addEventListener("change", function(event) {
+                const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+
+                if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+
+                const reader = new FileReader();
+
+                // Lê o conteúdo do arquivo como texto
+                reader.onload = function() {
+                    try {
+                        const csvData = reader.result;
+
+                        // Divide as linhas do CSV
+                        const linhas = csvData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+
+                        // Processa os dados (demais linhas)
+                        const dadosTratados = linhas.map(linha => {
+                            const valores = linha.split(separador).map(valor => valor.trim());
+
+                            return valores;
+                        });
+
+                        context.content = dadosTratados.map(amostra =>
+                            Object.values(amostra)
+                        );
+                        context._matrix2Advanced();
+                        context.atualizarQuantidadeColunasLinhas();
+
+                        context.columns = context.content[0]?.length || 0;
+                        context.colunas = context.columns;
+
+                        if (callback) {
+                            // Chama o callback com os dados CSV
+                            callback(dadosTratados, context);
+                        }
+                    } catch (error) {
+                        console.error("Erro ao carregar o arquivo CSV:", error);
+                        alert("O arquivo selecionado não é um CSV válido.");
+                    }
+                };
+
+                // Lê o arquivo
+                reader.readAsText(file);
+
+                // Remove o elemento de input do DOM após a leitura
+                document.body.removeChild(inputFile);
+            });
+
+            // Adiciona o elemento de input ao DOM para que possa ser utilizado
+            document.body.appendChild(inputFile);
+
+            // Simula um clique no input para abrir a janela de seleção de arquivo
+            inputFile.click();
+
+        //Se for node
+        }if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+        }
+	}
+
+	/**
+	* Carrega um arquivo TXT do computador via upload e injeta dentro deste DataStructure.
+	* @param {Function} callback Função a ser chamada após carregar os dados.
+	* @param {string} separador Separador usado no TXT (padrão: '\t').
+	*/
+	context.loadTXT = function(callback, separador = '\t') {
+
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+
+            // Cria dinamicamente o elemento <input> do tipo "file"
+            const inputFile = document.createElement("input");
+            inputFile.type = "file";
+            inputFile.accept = ".txt"; // Aceita apenas arquivos TXT
+
+            // Adiciona o evento "change" para capturar o arquivo selecionado
+            inputFile.addEventListener("change", function(event) {
+                const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+
+                if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+
+                const reader = new FileReader();
+
+                // Lê o conteúdo do arquivo como texto
+                reader.onload = function() {
+                    try {
+                        const txtData = reader.result;
+
+                        // Divide as linhas do TXT
+                        const linhas = txtData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+
+                        // Processa os dados (demais linhas)
+                        const dadosTratados = linhas.map(linha => {
+                            const valores = linha.split(separador).map(valor => valor.trim());
+
+                            return valores;
+                        });
+
+                        context.content = dadosTratados.map(amostra =>
+                            Object.values(amostra)
+                        );
+                        context._matrix2Advanced();
+                        context.atualizarQuantidadeColunasLinhas();
+
+                        context.columns = context.content[0]?.length || 0;
+                        context.colunas = context.columns;
+
+                        if (callback) {
+                            // Chama o callback com os dados TXT
+                            callback(dadosTratados, context);
+                        }
+                    } catch (error) {
+                        console.error("Erro ao carregar o arquivo TXT:", error);
+                        alert("O arquivo selecionado não é um TXT válido.");
+                    }
+                };
+
+                // Lê o arquivo
+                reader.readAsText(file);
+
+                // Remove o elemento de input do DOM após a leitura
+                document.body.removeChild(inputFile);
+            });
+
+            // Adiciona o elemento de input ao DOM para que possa ser utilizado
+            document.body.appendChild(inputFile);
+
+            // Simula um clique no input para abrir a janela de seleção de arquivo
+            inputFile.click();
+
+        //Se for node
+        }else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+        }
 	}
 
     //return context;
