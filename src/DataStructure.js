@@ -73,6 +73,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	/**
 	* Exporta os dados deste DataStructure para um formato JSON
+	* @returns {Array}
 	*/
 	context.exportarJSON = function( downloadArquivo=null ){
 		const dadosConvertidos = [];
@@ -104,6 +105,67 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 
 		return dadosConvertidos;
+	}
+
+	/**
+	* Exporta os dados deste DataStructure para um formato JSON completo
+	* @returns {Object}
+	*/
+	context.exportarJSON_indexado = function( downloadArquivo=null ){
+		const dadosConvertidos = {};
+
+		//Percorre cada amostra
+		context.forEach(function( indiceElemento, amostraVector, contexto ){
+			const estruturaCamposAmostra = {};
+			
+			//Obtem os valores dos campos para a amostra atual
+			context.nomesCampos.forEach(function(nomeCampo){
+
+				estruturaCamposAmostra[nomeCampo] = amostraVector.getCampo( nomeCampo )
+				                                                 .raw();
+
+			});
+
+			//Adiciona os dados JSON da amostra atual na lista
+			dadosConvertidos[ indiceElemento ] = estruturaCamposAmostra;
+		});
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+				context.downloadArquivo( dadosConvertidos , downloadArquivo );
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+		}
+
+		return dadosConvertidos;
+	}
+
+	/**
+	* Exporta os dados para um JSON que contém ARRAYS para os dados das colunas
+	*/
+	context.exportarJSON_colunas = function( downloadArquivo=null ){
+		
+		const dadosJSON_ARRAY = {};
+
+		context.getNomeCampos().forEach(function(nomeCampo){
+			const dadosCampo = context.extrairValoresCampo(nomeCampo).rawProfundo();
+			dadosJSON_ARRAY[nomeCampo] = dadosCampo;
+		});
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+				context.downloadArquivo( dadosJSON_ARRAY , downloadArquivo );
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+		}
+
+		return dadosJSON_ARRAY;
 	}
 
 	/**
@@ -848,21 +910,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*/
 	context.toMatrix = function(){
 		return Vectorization.Matrix( context.raw(), context.parametrosAdicionais );
-	}
-
-	/**
-	* Exporta os dados para um JSON que contém ARRAYS para os dados das colunas
-	*/
-	context.exportarJSON_colunas = function(){
-		
-		const dadosJSON_ARRAY = {};
-
-		context.getNomeCampos().forEach(function(nomeCampo){
-			const dadosCampo = context.extrairValoresCampo(nomeCampo).rawProfundo();
-			dadosJSON_ARRAY[nomeCampo] = dadosCampo;
-		});
-
-		return dadosJSON_ARRAY;
 	}
 
 	/**
