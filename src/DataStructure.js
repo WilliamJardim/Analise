@@ -453,6 +453,110 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Carrega um arquivo JSON do computador via upload e depois injeta dentro deste DataStructure
+	* @param {Function} callback 
+	*/
+	context.loadJSON_colunas = function(callback) {
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Cria dinamicamente o elemento <input> do tipo "file"
+			const inputFile = document.createElement("input");
+			inputFile.type = "file";
+			inputFile.accept = ".json"; // Aceita apenas arquivos JSON
+		
+			// Adiciona o evento "change" para capturar o arquivo selecionado
+			inputFile.addEventListener("change", function (event) {
+				const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+		
+				if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+		
+				const reader = new FileReader();
+		
+				// Lê o conteúdo do arquivo como texto
+				reader.onload = function () {
+					try {
+						// Parseia o conteúdo do arquivo para JSON
+						const jsonData = JSON.parse(reader.result);
+						
+						//Para cada amostra
+						const dados_tratados = [];
+						const map_keysIdentificadas_tratado = {};
+
+						const camposPresentes    = Object.keys(jsonData);
+						const quantidadeCampos   = camposPresentes.length;
+						const quantidadeAmostras = jsonData[ camposPresentes[0] ].length;
+
+						for( let i = 0 ; i < quantidadeAmostras ; i++ )
+						{
+							//Extrai as informações
+							const dadosAmostra = [];
+
+							//Para cada campo
+							camposPresentes.forEach(function(nomeCampo){
+								dadosAmostra.push( jsonData[nomeCampo][i] );
+							});
+
+							const keysAmostra     = camposPresentes;
+				
+							//Vai salvando as chaves no mapa de chaves identificadas
+							keysAmostra.forEach(function(chave){
+								map_keysIdentificadas_tratado[chave] = true;
+							});
+				
+							const valoresAmostra = dadosAmostra;
+				
+							//Joga os dados da amostra no Array
+							dados_tratados.push(valoresAmostra);
+						}
+
+						//Se os campos não existem neste DataStructure, cria
+						context.keysIdentificadas = Object.keys( map_keysIdentificadas_tratado );
+						context.nomesCampos       = context.keysIdentificadas;
+
+						context.content = dados_tratados;
+						context._matrix2Advanced();
+						context.mapearNomes();
+						context.atualizarQuantidadeColunasLinhas();
+
+						//Atualiza a quantidade das colunas
+						//Como é um JSON, vai precisar calcular de forma diferente as colunas
+						context.columns = context.content[0].length;
+						context.colunas = context.columns;
+
+						context.injetarFuncoesAmostras();
+
+						if(callback)
+						{
+							// Chama o callback com os dados JSON
+							callback(jsonData, context);
+						}
+
+					} catch (error) {
+						console.error("Erro ao carregar o arquivo JSON:", error);
+						alert("O arquivo selecionado não é um JSON válido.");
+					}
+				};
+		
+				// Lê o arquivo
+				reader.readAsText(file);
+		
+				// Remove o elemento de input do DOM após a leitura
+				document.body.removeChild(inputFile);
+			});
+		
+			// Adiciona o elemento de input ao DOM para que possa ser utilizado
+			document.body.appendChild(inputFile);
+		
+			// Simula um clique no input para abrir a janela de seleção de arquivo
+			inputFile.click();
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+			
+		}
+	}
+
+	/**
 	* Carrega um arquivo CSV do computador via upload e injeta dentro deste DataStructure
 	* @param {Function} callback
 	* @param {string} separador Separador usado no CSV (padrão: ',')
