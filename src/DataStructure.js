@@ -975,8 +975,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		//Pegar os campos que tem no OUTRO DataStructure  QUE NÂO EXISTEM NO DataStructure Atual
 		const camposOutro = outraDataStructure.getNomeCampos().filter(function( nomeCampo ){ return !camposEste.includes(nomeCampo) });
 
-		//TODO: Ajusta a flexibilidade do DataStructure atual
-
 		//Percorrer cada amostra do outro DataStructure
 		outraDataStructure.forEach(function( indiceAmostra, amostraOutroVector, contextOutro ){
 
@@ -1015,6 +1013,17 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				const camposCriar = outraDataStructure.getNomeCampos();
 				context.criarCamposEmBranco( camposCriar );
 
+				//Ajusta a flexibilidade antes de adicionar os campos que faltam
+				camposCriar.forEach(function( nomeCampo ){
+					//Obtem a flexibilidade do campo
+					const indiceCampoEste          = context.getNomeCampos().indexOf( nomeCampo );
+					const indiceCampoOutro         = outraDataStructure.getNomeCampos().indexOf( nomeCampo );
+					const flexibilidadeCampoOutro  = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+
+					//Define a flexibilidade
+					context.flexibilidade[ indiceCampoEste ] = flexibilidadeCampoOutro;
+				});
+
 				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
 				//const camposFaltaram = camposOutro;
 				//context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
@@ -1024,14 +1033,19 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				camposEste.forEach( function(nomeCampo){ 
 					
 					if( contextOutro.existeCampo(nomeCampo) == true ){
+						//Se ja existe então a flexibilidade tambem ja esta definida
+
+						//Define o valor
 						estruturaCamposAmostra[nomeCampo] = amostraOutroVector.getCampo(nomeCampo).raw();
 
+					//Se o campo não existe no outro DataStructure, define um valor padrão, e ajusta a flexibilidade
 					}else{
+						//Define o valor
 						estruturaCamposAmostra[nomeCampo] = 0;
 					}
 					
 				});
-
+				
 				context.inserir( estruturaCamposAmostra );
 
 				context.columns = context.content[0].length;
