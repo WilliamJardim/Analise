@@ -957,8 +957,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
-	* TODO: QUASE PRONTO: Colocar pra ele identificar os tipos de flexibilidade e configurar corretas ao adicionar os campos e criar amostras novas 
-	*
 	* MERGE:
 	*	mesclar duas DataStructure(es)
     *
