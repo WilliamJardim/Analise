@@ -1270,6 +1270,22 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*/
 	context.ultimos = context.ultimas;
 
+	/**
+	* Extrai as primeiras linhas
+	*/
+	context.primeiras = function( primeiras_linhas ){
+		if(!primeiras_linhas){
+			throw 'Voce precisa dizer quantas linhas são!';
+		}
+	
+		return context.lineRange( 0, primeiras_linhas );
+	}
+
+	/**
+	* Extrai as primeiras linhas
+	*/
+	context.primeiros = context.primeiras;
+
 	/*
 	Itera sobre cada campo do DataStructure, chamando um callback sincrono theFunction( campo, indiceCampo, valoresCampo, context )
 	*/
