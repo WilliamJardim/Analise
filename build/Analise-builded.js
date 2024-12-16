@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 4/12/2024 - 21:16:02*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 16/12/2024 - 16:11:39*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -22,7 +22,7 @@ if(typeof window === 'undefined'){
     window.VECTORIZATION_BUILD_TYPE = 'navegador';
 }
 
-/* COMPILADO: 3/12/2024 - 22:01:10*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
+/* COMPILADO: 11/12/2024 - 15:35:57*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
 /*
  * File Name: Root.js
  * Author Name: William Alves Jardim
@@ -391,6 +391,87 @@ window.Vectorization.isAlgumVetorVectorization = function(obj){
 }
 
 module.exports = window.Vectorization.Root;
+
+//Cria uma namespace para calculos matemáticos basicos
+window.Vectorization.Math = {};
+
+window.Vectorization.Math.log = function(base, valor){
+    return Math.log(valor) / Math.log(base)
+}
+
+window.Vectorization.Math.log2 = function(valor){
+    return Math.log2(valor);
+}
+
+window.Vectorization.Math.log10 = function(valor){
+    return Math.log10(valor);
+}
+
+window.Vectorization.Math.sin = function(radians){
+    return Math.sin(radians);
+}
+
+window.Vectorization.Math.cos = function(radians){
+    return Math.cos(radians);
+}
+
+window.Vectorization.Math.pow = function(base, exponente){
+    return Math.pow(base, exponente);
+}
+
+/**
+* Calcula a correlação de Pearson entre dois vetores do Vectorization. 
+* Valores altos proximos de 1 significa que é uma correlação positiva forte, ou seja, isso significa que quando os valores de X aumentam, os valores de Y tambem aumentam
+* Valores altos proximos de -1 significa que é uma correlação negativa forte, ou seja, isso significa que quando os valores de X aumentam, os valores de Y diminuem
+*
+* @param {Vectorization.Vector} vetor1
+* @param {Vectorization.Vector} vetor2
+* @returns {Number}
+*/
+window.Vectorization.Math.correlation = function(vetor1, vetor2) {
+    if( !Vectorization.Vector.isVector(vetor1) || !Vectorization.Vector.isVector(vetor2) ){
+        throw new Error('Os parametros precisam ser Vectorization.Vector(s)');
+    }
+    if (vetor1.length !== vetor2.length) {
+        throw new Error('Os dois vetores devem ter o mesmo tamanho.');
+    }
+    if (vetor1.length === 0) {
+        throw new Error('Os vetores não podem estar vazios.');
+    }
+
+    //Pega a quantidade de elementos, que vai ser a mesma para ambas os vetores
+    const qtdeElementos = vetor1.length;
+
+    //Calcula as médias de ambos os vetores
+    const mediaX = vetor1.media();
+    const mediaY = vetor2.media();
+
+    let numerador = 0;
+    let denominadorX = 0;
+    let denominadorY = 0;
+
+    for (let i = 0; i < qtdeElementos; i++) {
+        const deltaVetor1 = vetor1[i] - mediaX;
+        const deltaVetor2 = vetor2[i] - mediaY;
+
+        numerador += deltaVetor1 * deltaVetor2;
+        denominadorX += deltaVetor1 ** 2;
+        denominadorY += deltaVetor2 ** 2;
+    }
+
+    const denominador = Math.sqrt(denominadorX * denominadorY);
+
+    if (denominador === 0) {
+        throw new Error('Impossivel ter divisão por zero ao calcular a correlação.');
+    }
+
+    return numerador / denominador;
+}
+
+//Cria um alias para facilitar a chamada
+if( typeof V == 'undefined' ){
+    window.V = window.Vectorization;
+}
 /* FIM DO ARQUIVO VECTORIZATION: ../src/Root.js*/
 /* ARQUIVO VECTORIZATION: ../src/Utilidades.js*/
 /*
@@ -668,6 +749,15 @@ window.Vectorization.Scalar = function( value=NaN, classConfig={} ){
         return context.value + 0;
     }
 
+    context.isIgual = function( outraCoisa ){
+        if( Vectorization.Scalar.isScalar(outraCoisa) && outraCoisa.objectName != undefined ){
+            return context.raw() == outraCoisa.raw();
+
+        }else if( typeof outraCoisa == 'number' ){
+            return context.raw() == outraCoisa
+        }
+    }
+
     context.somarNumero = function(numero){
         return Vectorization.Scalar(context.value + numero, {... classConfig});
     }
@@ -919,6 +1009,15 @@ window.Vectorization.Text = function( value=NaN, classConfig={} ){
 
     context.raw = function(){
         return context.value;
+    }
+
+    context.isIgual = function( outraCoisa ){
+        if( Vectorization.Text.isText(outraCoisa) && outraCoisa.objectName != undefined ){
+            return context.raw() == outraCoisa.raw();
+
+        }else if( typeof outraCoisa == 'string' ){
+            return context.raw() == outraCoisa
+        }
     }
 
     /**
@@ -1914,10 +2013,16 @@ window.Vectorization.Vector = function( config=[], classConfig={} ){
             isIgual = false;
             return isIgual;
         }
-        
+
         for( let i = 0 ; i < vectorB.length ; i++ )
         {
-            if( vectorB.readIndex(i) == context.readIndex(i)){
+            const saoEscalaresOuTextos = (Vectorization.Text.isVectorizationText( vectorB.readIndex(i) ) == true && Vectorization.Text.isVectorizationText( context.readIndex(i) ) == true) == true ||
+                                         (Vectorization.Scalar.isVectorizationScalar( vectorB.readIndex(i) ) == true && Vectorization.Scalar.isVectorizationScalar( context.readIndex(i) ) == true) == true;
+            
+            const condicao = saoEscalaresOuTextos == true ? vectorB.readIndex(i).isIgual( context.readIndex(i) )
+                                                          : vectorB.readIndex(i) == context.readIndex(i);
+
+            if( condicao == true ){
                 isIgual = true;
             }else{
                 isIgual = false;
@@ -3118,6 +3223,21 @@ window.Vectorization.Vector = function( config=[], classConfig={} ){
         return Vectorization.Vector(novoVetor);
     }
 
+    /**
+    * Obtem o log10 de cada elemento do vetor
+    * @returns {Vectorization.Vector}
+    */
+    context.log10 = function(){
+        let novoVetor = [];
+        
+        for( let i = 0 ; i < context.content.length ; i++ )
+        {
+            novoVetor[i] = Math.log10(context.content[i]);
+        }
+
+        return Vectorization.Vector(novoVetor);
+    }
+
     context.removerApenasUm = function(elementoRemover){
         let novoVectorRetirado = Vectorization.Vector([]);
         let vetorPercorrer = context.duplicar();
@@ -3597,6 +3717,13 @@ window.Vectorization.Vector = function( config=[], classConfig={} ){
         });
 
         return frequenciaComputada;
+    }
+
+    /**
+    * Calcula a correlação deste Vectorization.Vector com a de outro Vectorization.Vector
+    */
+    context.correlationWith = function( outroVector ){
+        return Vectorization.Math.correlation( Vectorization.Vector(context.raw()), outroVector );
     }
 
     /**
@@ -6220,6 +6347,26 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
     }
 
     /**
+     * Obtem o log10, de cada elemento da matrix 
+     * @returns {Vectorization.Matrix}
+     */
+    context.log10 = function(){
+        let matrixA = context.content;
+        let novaMatrix = [];
+    
+        for( let i = 0 ; i < matrixA.length ; i++ )
+        {
+            novaMatrix[i] = [];
+            for( let j = 0 ; j < matrixA[0].length ; j++ )
+            {
+                novaMatrix[i][j] = Math.log10(matrixA[i][j]);
+            }
+        }
+    
+        return Vectorization.Matrix(novaMatrix);
+    }
+
+    /**
     * Tenta obter a matrix de identidade de ordem desta matrix 
     */
     context.identidade = function(){
@@ -6755,6 +6902,15 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
         };
     }
 
+    /**
+    * Calcula a correlação entre duas colunas(pelo indice) 
+    */
+    context.correlationColumns = function(indiceColuna1, indiceColuna2){
+        const valoresColuna1 = context.extrairValoresColuna(indiceColuna1);
+        const valoresColuna2 = context.extrairValoresColuna(indiceColuna2);
+        return valoresColuna1.correlationWith( valoresColuna2 );
+    }
+
     context._doDefaultBaseAfterCreate();
 
     //Se a opção advanced estiver ativa, ele roda um método adicional após criar a matrix
@@ -6805,15 +6961,19 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
     * @param {string} nomeArquivo Nome do arquivo.
     */
     context.downloadArquivo = function(conteudo, nomeArquivo) {
-        const blob = new Blob([conteudo], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = nomeArquivo;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+
+            const blob = new Blob([conteudo], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+        }
     }
 
     /**
@@ -6848,9 +7008,15 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
             csvConteudo = csvConteudo.slice(0, csvConteudo.length-String('\n').length);
         }
 
-        // Faz o download do arquivo, se solicitado
-        if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
-            context.downloadArquivo(csvConteudo, downloadArquivo);
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            // Faz o download do arquivo, se solicitado
+            if (downloadArquivo && downloadArquivo.endsWith('.csv')) {
+                context.downloadArquivo(csvConteudo, downloadArquivo);
+            }
+
+        //Se for node
+        }if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
         }
 
         return csvConteudo;
@@ -6884,9 +7050,15 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
             txtConteudo = txtConteudo.slice(0, txtConteudo.length-String('\n').length);
         }
 
-        // Faz o download do arquivo, se solicitado
-        if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
-            context.downloadArquivo(txtConteudo, downloadArquivo);
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            // Faz o download do arquivo, se solicitado
+            if (downloadArquivo && downloadArquivo.endsWith('.txt')) {
+                context.downloadArquivo(txtConteudo, downloadArquivo);
+            }
+
+        //Se for node
+        }else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
         }
 
         return txtConteudo;
@@ -6897,11 +7069,168 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
 	*/
 	context.exportarJSON = function( downloadArquivo=null ){
 		
-		if(downloadArquivo && downloadArquivo.endsWith('.json') ){
-			context.downloadArquivo( context.raw() , downloadArquivo );
-		}
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+                context.downloadArquivo( context.raw() , downloadArquivo );
+            }
+
+        //Se for node
+        }if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+            
+        }
 
 		return context.raw();
+	}
+
+    /** IMPORTAR DADOS */
+
+	/**
+	* Carrega um arquivo CSV do computador via upload e injeta dentro deste DataStructure
+	* @param {Function} callback
+	* @param {string} separador Separador usado no CSV (padrão: ',')
+	*/
+	context.loadCSV = function(callback, separador = ',') {
+
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+            // Cria dinamicamente o elemento <input> do tipo "file"
+            const inputFile = document.createElement("input");
+            inputFile.type = "file";
+            inputFile.accept = ".csv"; // Aceita apenas arquivos CSV
+
+            // Adiciona o evento "change" para capturar o arquivo selecionado
+            inputFile.addEventListener("change", function(event) {
+                const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+
+                if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+
+                const reader = new FileReader();
+
+                // Lê o conteúdo do arquivo como texto
+                reader.onload = function() {
+                    try {
+                        const csvData = reader.result;
+
+                        // Divide as linhas do CSV
+                        const linhas = csvData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+
+                        // Processa os dados (demais linhas)
+                        const dadosTratados = linhas.map(linha => {
+                            const valores = linha.split(separador).map(valor => valor.trim());
+
+                            return valores;
+                        });
+
+                        context.content = dadosTratados.map(amostra =>
+                            Object.values(amostra)
+                        );
+                        context._matrix2Advanced();
+                        context.atualizarQuantidadeColunasLinhas();
+
+                        context.columns = context.content[0]?.length || 0;
+                        context.colunas = context.columns;
+
+                        if (callback) {
+                            // Chama o callback com os dados CSV
+                            callback(dadosTratados, context);
+                        }
+                    } catch (error) {
+                        console.error("Erro ao carregar o arquivo CSV:", error);
+                        alert("O arquivo selecionado não é um CSV válido.");
+                    }
+                };
+
+                // Lê o arquivo
+                reader.readAsText(file);
+
+                // Remove o elemento de input do DOM após a leitura
+                document.body.removeChild(inputFile);
+            });
+
+            // Adiciona o elemento de input ao DOM para que possa ser utilizado
+            document.body.appendChild(inputFile);
+
+            // Simula um clique no input para abrir a janela de seleção de arquivo
+            inputFile.click();
+
+        //Se for node
+        }if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+        }
+	}
+
+	/**
+	* Carrega um arquivo TXT do computador via upload e injeta dentro deste DataStructure.
+	* @param {Function} callback Função a ser chamada após carregar os dados.
+	* @param {string} separador Separador usado no TXT (padrão: '\t').
+	*/
+	context.loadTXT = function(callback, separador = '\t') {
+
+        if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+
+            // Cria dinamicamente o elemento <input> do tipo "file"
+            const inputFile = document.createElement("input");
+            inputFile.type = "file";
+            inputFile.accept = ".txt"; // Aceita apenas arquivos TXT
+
+            // Adiciona o evento "change" para capturar o arquivo selecionado
+            inputFile.addEventListener("change", function(event) {
+                const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+
+                if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+
+                const reader = new FileReader();
+
+                // Lê o conteúdo do arquivo como texto
+                reader.onload = function() {
+                    try {
+                        const txtData = reader.result;
+
+                        // Divide as linhas do TXT
+                        const linhas = txtData.split(/\r?\n/).filter(linha => linha.trim() !== '');
+
+                        // Processa os dados (demais linhas)
+                        const dadosTratados = linhas.map(linha => {
+                            const valores = linha.split(separador).map(valor => valor.trim());
+
+                            return valores;
+                        });
+
+                        context.content = dadosTratados.map(amostra =>
+                            Object.values(amostra)
+                        );
+                        context._matrix2Advanced();
+                        context.atualizarQuantidadeColunasLinhas();
+
+                        context.columns = context.content[0]?.length || 0;
+                        context.colunas = context.columns;
+
+                        if (callback) {
+                            // Chama o callback com os dados TXT
+                            callback(dadosTratados, context);
+                        }
+                    } catch (error) {
+                        console.error("Erro ao carregar o arquivo TXT:", error);
+                        alert("O arquivo selecionado não é um TXT válido.");
+                    }
+                };
+
+                // Lê o arquivo
+                reader.readAsText(file);
+
+                // Remove o elemento de input do DOM após a leitura
+                document.body.removeChild(inputFile);
+            });
+
+            // Adiciona o elemento de input ao DOM para que possa ser utilizado
+            document.body.appendChild(inputFile);
+
+            // Simula um clique no input para abrir a janela de seleção de arquivo
+            inputFile.click();
+
+        //Se for node
+        }else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+        }
 	}
 
     //return context;
@@ -7715,6 +8044,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	/**
 	* Exporta os dados deste DataStructure para um formato JSON
+	* @returns {Array}
 	*/
 	context.exportarJSON = function( downloadArquivo=null ){
 		const dadosConvertidos = [];
@@ -7746,6 +8076,67 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 
 		return dadosConvertidos;
+	}
+
+	/**
+	* Exporta os dados deste DataStructure para um formato JSON completo
+	* @returns {Object}
+	*/
+	context.exportarJSON_indexado = function( downloadArquivo=null ){
+		const dadosConvertidos = {};
+
+		//Percorre cada amostra
+		context.forEach(function( indiceElemento, amostraVector, contexto ){
+			const estruturaCamposAmostra = {};
+			
+			//Obtem os valores dos campos para a amostra atual
+			context.nomesCampos.forEach(function(nomeCampo){
+
+				estruturaCamposAmostra[nomeCampo] = amostraVector.getCampo( nomeCampo )
+				                                                 .raw();
+
+			});
+
+			//Adiciona os dados JSON da amostra atual na lista
+			dadosConvertidos[ indiceElemento ] = estruturaCamposAmostra;
+		});
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+				context.downloadArquivo( dadosConvertidos , downloadArquivo );
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+		}
+
+		return dadosConvertidos;
+	}
+
+	/**
+	* Exporta os dados para um JSON que contém ARRAYS para os dados das colunas
+	*/
+	context.exportarJSON_colunas = function( downloadArquivo=null ){
+		
+		const dadosJSON_ARRAY = {};
+
+		context.getNomeCampos().forEach(function(nomeCampo){
+			const dadosCampo = context.extrairValoresCampo(nomeCampo).rawProfundo();
+			dadosJSON_ARRAY[nomeCampo] = dadosCampo;
+		});
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			if(downloadArquivo && downloadArquivo.endsWith('.json') ){
+				context.downloadArquivo( dadosJSON_ARRAY , downloadArquivo );
+			}
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ) {
+
+		}
+
+		return dadosJSON_ARRAY;
 	}
 
 	/**
@@ -7886,6 +8277,204 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 							});
 				
 							const valoresAmostra  = Object.values(amostraJSON);
+				
+							//Joga os dados da amostra no Array
+							dados_tratados.push(valoresAmostra);
+						}
+
+						//Se os campos não existem neste DataStructure, cria
+						context.keysIdentificadas = Object.keys( map_keysIdentificadas_tratado );
+						context.nomesCampos       = context.keysIdentificadas;
+
+						context.content = dados_tratados;
+						context._matrix2Advanced();
+						context.mapearNomes();
+						context.atualizarQuantidadeColunasLinhas();
+
+						//Atualiza a quantidade das colunas
+						//Como é um JSON, vai precisar calcular de forma diferente as colunas
+						context.columns = context.content[0].length;
+						context.colunas = context.columns;
+
+						context.injetarFuncoesAmostras();
+
+						if(callback)
+						{
+							// Chama o callback com os dados JSON
+							callback(jsonData, context);
+						}
+
+					} catch (error) {
+						console.error("Erro ao carregar o arquivo JSON:", error);
+						alert("O arquivo selecionado não é um JSON válido.");
+					}
+				};
+		
+				// Lê o arquivo
+				reader.readAsText(file);
+		
+				// Remove o elemento de input do DOM após a leitura
+				document.body.removeChild(inputFile);
+			});
+		
+			// Adiciona o elemento de input ao DOM para que possa ser utilizado
+			document.body.appendChild(inputFile);
+		
+			// Simula um clique no input para abrir a janela de seleção de arquivo
+			inputFile.click();
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+			
+		}
+	}
+
+	/**
+	* Carrega um arquivo JSON do computador via upload e depois injeta dentro deste DataStructure
+	* @param {Function} callback 
+	*/
+	context.loadJSON_indexado = function(callback) {
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Cria dinamicamente o elemento <input> do tipo "file"
+			const inputFile = document.createElement("input");
+			inputFile.type = "file";
+			inputFile.accept = ".json"; // Aceita apenas arquivos JSON
+		
+			// Adiciona o evento "change" para capturar o arquivo selecionado
+			inputFile.addEventListener("change", function (event) {
+				const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+		
+				if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+		
+				const reader = new FileReader();
+		
+				// Lê o conteúdo do arquivo como texto
+				reader.onload = function () {
+					try {
+						// Parseia o conteúdo do arquivo para JSON
+						const jsonData = JSON.parse(reader.result);
+						
+						//Para cada amostra
+						const dados_tratados = [];
+						const map_keysIdentificadas_tratado = {};
+
+						for( let i = 0 ; i < Object.keys(jsonData).length ; i++ )
+						{
+							//Extrai as informações
+							const amostraJSON     = jsonData[i];
+							const keysAmostra     = Object.keys(amostraJSON);
+				
+							//Vai salvando as chaves no mapa de chaves identificadas
+							keysAmostra.forEach(function(chave){
+								map_keysIdentificadas_tratado[chave] = true;
+							});
+				
+							const valoresAmostra  = Object.values(amostraJSON);
+				
+							//Joga os dados da amostra no Array
+							dados_tratados.push(valoresAmostra);
+						}
+
+						//Se os campos não existem neste DataStructure, cria
+						context.keysIdentificadas = Object.keys( map_keysIdentificadas_tratado );
+						context.nomesCampos       = context.keysIdentificadas;
+
+						context.content = dados_tratados;
+						context._matrix2Advanced();
+						context.mapearNomes();
+						context.atualizarQuantidadeColunasLinhas();
+
+						//Atualiza a quantidade das colunas
+						//Como é um JSON, vai precisar calcular de forma diferente as colunas
+						context.columns = context.content[0].length;
+						context.colunas = context.columns;
+
+						context.injetarFuncoesAmostras();
+
+						if(callback)
+						{
+							// Chama o callback com os dados JSON
+							callback(jsonData, context);
+						}
+
+					} catch (error) {
+						console.error("Erro ao carregar o arquivo JSON:", error);
+						alert("O arquivo selecionado não é um JSON válido.");
+					}
+				};
+		
+				// Lê o arquivo
+				reader.readAsText(file);
+		
+				// Remove o elemento de input do DOM após a leitura
+				document.body.removeChild(inputFile);
+			});
+		
+			// Adiciona o elemento de input ao DOM para que possa ser utilizado
+			document.body.appendChild(inputFile);
+		
+			// Simula um clique no input para abrir a janela de seleção de arquivo
+			inputFile.click();
+
+		//Se for node
+		}else if( VECTORIZATION_BUILD_TYPE == 'node' ){
+			
+		}
+	}
+
+	/**
+	* Carrega um arquivo JSON do computador via upload e depois injeta dentro deste DataStructure
+	* @param {Function} callback 
+	*/
+	context.loadJSON_colunas = function(callback) {
+
+		if( VECTORIZATION_BUILD_TYPE == 'navegador' ) {
+			// Cria dinamicamente o elemento <input> do tipo "file"
+			const inputFile = document.createElement("input");
+			inputFile.type = "file";
+			inputFile.accept = ".json"; // Aceita apenas arquivos JSON
+		
+			// Adiciona o evento "change" para capturar o arquivo selecionado
+			inputFile.addEventListener("change", function (event) {
+				const file = event.target.files[0]; // Obtém o primeiro arquivo selecionado
+		
+				if (!file) return; // Caso nenhum arquivo seja selecionado, não faz nada
+		
+				const reader = new FileReader();
+		
+				// Lê o conteúdo do arquivo como texto
+				reader.onload = function () {
+					try {
+						// Parseia o conteúdo do arquivo para JSON
+						const jsonData = JSON.parse(reader.result);
+						
+						//Para cada amostra
+						const dados_tratados = [];
+						const map_keysIdentificadas_tratado = {};
+
+						const camposPresentes    = Object.keys(jsonData);
+						const quantidadeCampos   = camposPresentes.length;
+						const quantidadeAmostras = jsonData[ camposPresentes[0] ].length;
+
+						for( let i = 0 ; i < quantidadeAmostras ; i++ )
+						{
+							//Extrai as informações
+							const dadosAmostra = [];
+
+							//Para cada campo
+							camposPresentes.forEach(function(nomeCampo){
+								dadosAmostra.push( jsonData[nomeCampo][i] );
+							});
+
+							const keysAmostra     = camposPresentes;
+				
+							//Vai salvando as chaves no mapa de chaves identificadas
+							keysAmostra.forEach(function(chave){
+								map_keysIdentificadas_tratado[chave] = true;
+							});
+				
+							const valoresAmostra = dadosAmostra;
 				
 							//Joga os dados da amostra no Array
 							dados_tratados.push(valoresAmostra);
@@ -8192,6 +8781,50 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	/**
 	* @override
+    * Permite fatiar(ou recortar) o DataStructure
+    * @param {linhaInicial} - inicio
+    * @param {linhaFinal} - final
+    * @param {intervalo} - intervalo
+    * @returns {Vectorization.Matrix} - o DataStructure recortado
+    */
+    context.slice = function(linhaInicial, linhaFinal, intervalo=1){
+        let dadosRecortados = [];
+
+        if( linhaInicial < 0 ){
+            throw 'A linhaInicial precisa ser maior ou igual a zero!';
+        }
+
+        if( linhaFinal > context.rows ){
+            throw 'A linhaFinal precisa estar entre as linhas da matriz! valor muito alto!';
+        }
+
+        if( intervalo <= 0 ){
+            throw 'O intervalo precisa ser maior que zero!';
+        }
+
+        for( let i = linhaInicial ; i < linhaFinal ; i = i + intervalo )
+        {
+            dadosRecortados.push( context.getLinha(i).rawProfundo() );
+        }
+
+		const parametrosDados = {
+			campos: context.nomesCampos, 
+			flexibilidade: context.flexibilidade 
+		};
+
+        return Analise.DataStructure( Vectorization.Matrix( 
+			                                                dadosRecortados, 
+			                                                parametrosDados
+														  ).raw(),
+									  parametrosDados
+									);
+    }
+
+    context.recortarLinhas = context.slice;
+    context.sliceLinhas = context.slice;
+
+	/**
+	* @override
     * Obtem um novo DataStructure exatamente igual a este
     * Ou seja, faz um copia do propio objeto, identico, porém sem manter as referencias. 
     * @returns {Analise.DataStructure}
@@ -8211,9 +8844,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			}
 
 			//Cria um novo campo dentro da amostra atual
-			vetorAmostra.adicionarCampo = function( nomeCampo, valorDefinir ){
+			vetorAmostra.adicionarCampo = function( nomeCampo, valorDefinir, flexibilidadeUsada ){
 				context.criarCampoEmBranco( nomeCampo );
 				vetorAmostra.setCampo( nomeCampo, valorDefinir );
+
+				//Adiciona na flexibilidade
+				context.flexibilidade[ context.getIndiceCampo( nomeCampo ) ] = flexibilidadeUsada;
 			}
 
 			//Converte a amostra para JSON
@@ -8292,8 +8928,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
-	* TODO: Colocar pra ele identificar os tipos de flexibilidade e configurar corretas ao adicionar os campos e criar amostras novas 
-	*
 	* MERGE:
 	*	mesclar duas DataStructure(es)
     *
@@ -8327,8 +8961,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 					camposOutro.forEach(function( campoOutro ){
 						const valorInserir = amostraOutroVector.getCampo( campoOutro );
 
+						//Obtem a flexibilidade do campo
+						const indiceCampoOutro = outraDataStructure.getNomeCampos().indexOf( campoOutro );
+						const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+
 						//Adiciona o campo apenas na amostraAtual, e nas demais amostras, preenche aquele campo com null se ele não existir
-						amostraAtual.adicionarCampo( campoOutro, valorInserir );
+						amostraAtual.adicionarCampo( campoOutro, valorInserir, flexibilidadeCampoOutro );
 					});	
 
 					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
@@ -8344,6 +8982,17 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				const camposCriar = outraDataStructure.getNomeCampos();
 				context.criarCamposEmBranco( camposCriar );
 
+				//Ajusta a flexibilidade antes de adicionar os campos que faltam
+				camposCriar.forEach(function( nomeCampo ){
+					//Obtem a flexibilidade do campo
+					const indiceCampoEste          = context.getNomeCampos().indexOf( nomeCampo );
+					const indiceCampoOutro         = outraDataStructure.getNomeCampos().indexOf( nomeCampo );
+					const flexibilidadeCampoOutro  = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+
+					//Define a flexibilidade
+					context.flexibilidade[ indiceCampoEste ] = flexibilidadeCampoOutro;
+				});
+
 				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
 				//const camposFaltaram = camposOutro;
 				//context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
@@ -8353,14 +9002,19 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				camposEste.forEach( function(nomeCampo){ 
 					
 					if( contextOutro.existeCampo(nomeCampo) == true ){
+						//Se ja existe então a flexibilidade tambem ja esta definida
+
+						//Define o valor
 						estruturaCamposAmostra[nomeCampo] = amostraOutroVector.getCampo(nomeCampo).raw();
 
+					//Se o campo não existe no outro DataStructure, define um valor padrão, e ajusta a flexibilidade
 					}else{
+						//Define o valor
 						estruturaCamposAmostra[nomeCampo] = 0;
 					}
 					
 				});
-
+				
 				context.inserir( estruturaCamposAmostra );
 
 				context.columns = context.content[0].length;
@@ -8564,6 +9218,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Calcula a correlação entre dois campos 
+	*/
+	context.correlacaoCampos = function( campo1, campo2 ){
+		return Vectorization.Math.correlation( 
+			                                   Vectorization.Vector( context.extrairValoresCampo(campo1).rawProfundo() ), 
+		                                       Vectorization.Vector( context.extrairValoresCampo(campo2).rawProfundo() ) 
+											  );
+	}
+
+	/**
 	* Extrai todos os valores de vários campos e retorna um novo DataStructure
 	*/
 	context.selectCampos     = context.extrairValoresCampos;
@@ -8578,6 +9242,41 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     context.lineRange = function(linhaInicial, linhaFinal){
         return context.slice(linhaInicial, linhaFinal);
     }
+
+	/**
+	* Extrai as ultimas linhas
+	*/
+	context.ultimas = function( ultimas_linhas ){
+		if(!ultimas_linhas){
+			throw 'Voce precisa dizer quantas linhas são!';
+		}
+		if( context.linhas-ultimas_linhas < 0 ){
+			throw `Impossivel voltar ${ ultimas_linhas } linhas sendo que o seu DataStructure possui apenas ${context.linhas} amostras.`;
+		}
+
+		return context.lineRange( context.linhas-ultimas_linhas, context.linhas );
+	}
+
+	/**
+	* Extrai as ultimas linhas
+	*/
+	context.ultimos = context.ultimas;
+
+	/**
+	* Extrai as primeiras linhas
+	*/
+	context.primeiras = function( primeiras_linhas ){
+		if(!primeiras_linhas){
+			throw 'Voce precisa dizer quantas linhas são!';
+		}
+	
+		return context.lineRange( 0, primeiras_linhas );
+	}
+
+	/**
+	* Extrai as primeiras linhas
+	*/
+	context.primeiros = context.primeiras;
 
 	/*
 	Itera sobre cada campo do DataStructure, chamando um callback sincrono theFunction( campo, indiceCampo, valoresCampo, context )
