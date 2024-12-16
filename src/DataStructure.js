@@ -1182,6 +1182,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Calcula a correlação entre dois campos 
+	*/
+	context.correlacaoCampos = function( campo1, campo2 ){
+		return Vectorization.Math.correlation( 
+			                                   Vectorization.Vector( context.extrairValoresCampo(campo1).rawProfundo() ), 
+		                                       Vectorization.Vector( context.extrairValoresCampo(campo2).rawProfundo() ) 
+											  );
+	}
+
+	/**
 	* Extrai todos os valores de vários campos e retorna um novo DataStructure
 	*/
 	context.selectCampos     = context.extrairValoresCampos;
