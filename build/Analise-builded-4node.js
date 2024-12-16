@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 16/12/2024 - 16:11:39*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 16/12/2024 - 17:06:24*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -8939,6 +8939,9 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*/
 	context.mergeWith = function( outraDataStructure, campoChave='nome' ){
 		
+		const campoChaveIsArray  = campoChave instanceof Array ? true : false; 
+		const campoChaveIsString = (!campoChaveIsArray && typeof campoChave == 'string') ? true : false; 
+
 		const camposEste  = context.getNomeCampos();
 
 		//Pegar os campos que tem no OUTRO DataStructure  QUE NÂO EXISTEM NO DataStructure Atual
@@ -8952,7 +8955,21 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			for( let i = 0 ; i < context.linhas ; i++){
 				const amostraAtual = context.getAmostra(i);
 
-				if( amostraAtual.getCampo(campoChave).raw() == amostraOutroVector.getCampo(campoChave).raw() ){
+				//Se algum campo chave foi correspondido
+				if( 
+					//Se o parametro for um array de nome de campos, usa eles como chave, PRA VERIFICAR se alguma amostra for correspondido
+					(
+						campoChaveIsArray  == true && 
+						campoChave.map(function( campoChaveAtual ){
+											return amostraAtual.getCampo(campoChaveAtual).raw() == amostraOutroVector.getCampo(campoChaveAtual).raw()
+									})
+									.some(( condicao )=>{ return condicao == true }) == true
+					) 
+
+					//Ou então, se existe apenas um unico campo chave, usa apenas ele PRA VERIFICAR se alguma amostra for correspondido
+					|| (campoChaveIsString == true && amostraAtual.getCampo(campoChave).raw() == amostraOutroVector.getCampo(campoChave).raw() )
+
+				){
 					seCorresponde = true; //Sinaliza que encontrou alguma correspondencia
 
 					//Para cada campo DO OUTRO QUE NÂO EXISTE NESSE 
@@ -8971,7 +8988,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
 					break;
-
 				}
 			}
 
@@ -9679,23 +9695,23 @@ var dataset = Analise.DataStructure([
 });*/
 
 var dataset = Analise.DataStructure([
-    { nome: 'William', idade: 42, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Rafael',  idade: 25, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Daniel',  idade: 19, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Danilo',  idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 }
+    { nome: 'William', cf: 27, idade: 42, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Rafael',  cf: 28, idade: 25, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Daniel',  cf: 29, idade: 19, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Danilo',  cf: 30, idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 }
 
 ], {
-    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']
+    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero', 'numero']
 });
 
 var dataset2 = Analise.DataStructure([
-    { nome: 'William', cargo: 'DEV', outro: 45 },
-    { nome: 'Rafael',  cargo: 'APICULTOR', outro: 45 },
-    { nome: 'Daniel',  cargo: 'DEV', outro: 45 },
-    { nome: 'Danilo',  cargo: 'DEV', outro: 45 },
-    { nome: 'Lucas',   cargo: 'AGRICULTOR', outro: 48}
+    { nome: 'William', cf: 27, cargo: 'DEV', outro: 45 },
+    { nome: 'Rafael',  cf: 28, cargo: 'APICULTOR', outro: 45 },
+    { nome: 'NAO SEI', cf: 29, cargo: 'DEV', outro: 45 },
+    { nome: 'Danilo',  cf: 30, cargo: 'DEV', outro: 45 },
+    { nome: 'Lucas',   cf: 31, cargo: 'AGRICULTOR', outro: 48}
 ], {
-    flexibilidade  : ['texto', 'texto', 'numero']
+    flexibilidade  : ['texto', 'numero',  'texto', 'numero']
 });
 /* FIM DO ARQUIVO: ../examples/browser/index.js*/
 
