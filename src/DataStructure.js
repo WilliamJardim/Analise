@@ -1065,8 +1065,94 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Retorna um novo DataStructure com essa junção feita
 	*/
 	context.mergeWithCampos = function( outraDataStructure, camposChave=['nome'] ){
-		camposChave.forEach(function(nomeCampoChave){
-			context.mergeWithCampo(outraDataStructure , nomeCampoChave );
+		const camposEste  = context.getNomeCampos();
+
+		//Pegar os campos que tem no OUTRO DataStructure  QUE NÂO EXISTEM NO DataStructure Atual
+		const camposOutro = outraDataStructure.getNomeCampos().filter(function( nomeCampo ){ return !camposEste.includes(nomeCampo) });
+
+		//Percorrer cada amostra do outro DataStructure
+		outraDataStructure.forEach(function( indiceAmostra, amostraOutroVector, contextOutro ){
+
+			//Verifica se o campo NOME da amostra atual deste DataStructure tem exatamente o mesmo valor que o campo NOME do OUTRO DataStructure 
+			let seCorresponde = false;
+			for( let i = 0 ; i < context.linhas ; i++){
+				const amostraAtual = context.getAmostra(i);
+
+				const algumBateu = camposChave.map(function( campoChave ){
+					return amostraAtual.getCampo(campoChave).raw() == amostraOutroVector.getCampo(campoChave).raw()
+				});
+
+				//Se algum campo chave foi correspondido
+				if( algumBateu.some(( condicao )=>{ return condicao == true }) == true ){
+					seCorresponde = true; //Sinaliza que encontrou alguma correspondencia
+
+					//Para cada campo DO OUTRO QUE NÂO EXISTE NESSE 
+					//Dados que serão adicionados neste DataStructure
+					
+					camposOutro.forEach(function( campoOutro ){
+						const valorInserir = amostraOutroVector.getCampo( campoOutro );
+
+						//Obtem a flexibilidade do campo
+						const indiceCampoOutro = outraDataStructure.getNomeCampos().indexOf( campoOutro );
+						const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+
+						//Adiciona o campo apenas na amostraAtual, e nas demais amostras, preenche aquele campo com null se ele não existir
+						amostraAtual.adicionarCampo( campoOutro, valorInserir, flexibilidadeCampoOutro );
+					});	
+
+					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
+					break;
+
+				}
+			}
+
+			//Se não encontrou nenhuma correspondencia
+			if( !seCorresponde ){
+				
+				//Cria os campos em branco
+				const camposCriar = outraDataStructure.getNomeCampos();
+				context.criarCamposEmBranco( camposCriar );
+
+				//Ajusta a flexibilidade antes de adicionar os campos que faltam
+				camposCriar.forEach(function( nomeCampo ){
+					//Obtem a flexibilidade do campo
+					const indiceCampoEste          = context.getNomeCampos().indexOf( nomeCampo );
+					const indiceCampoOutro         = outraDataStructure.getNomeCampos().indexOf( nomeCampo );
+					const flexibilidadeCampoOutro  = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+
+					//Define a flexibilidade
+					context.flexibilidade[ indiceCampoEste ] = flexibilidadeCampoOutro;
+				});
+
+				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
+				//const camposFaltaram = camposOutro;
+				//context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
+
+				//Monta os campos que vai adicionar
+				const estruturaCamposAmostra = {};
+				camposEste.forEach( function(nomeCampo){ 
+					
+					if( contextOutro.existeCampo(nomeCampo) == true ){
+						//Se ja existe então a flexibilidade tambem ja esta definida
+
+						//Define o valor
+						estruturaCamposAmostra[nomeCampo] = amostraOutroVector.getCampo(nomeCampo).raw();
+
+					//Se o campo não existe no outro DataStructure, define um valor padrão, e ajusta a flexibilidade
+					}else{
+						//Define o valor
+						estruturaCamposAmostra[nomeCampo] = 0;
+					}
+					
+				});
+				
+				context.inserir( estruturaCamposAmostra );
+
+				context.columns = context.content[0].length;
+				context.colunas = context.columns;
+
+				context.injetarFuncoesAmostras();
+			}
 		});
 	}	
 

@@ -11,21 +11,21 @@ var dataset = Analise.DataStructure([
 });*/
 
 var dataset = Analise.DataStructure([
-    { nome: 'William', idade: 42, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Rafael',  idade: 25, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Daniel',  idade: 19, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Danilo',  idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 }
+    { nome: 'William', cf: 27, idade: 42, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Rafael',  cf: 28, idade: 25, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Daniel',  cf: 29, idade: 19, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
+    { nome: 'Danilo',  cf: 30, idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 }
 
 ], {
-    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']
+    flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero', 'numero']
 });
 
 var dataset2 = Analise.DataStructure([
-    { nome: 'William', cargo: 'DEV', outro: 45 },
-    { nome: 'Rafael',  cargo: 'APICULTOR', outro: 45 },
-    { nome: 'Daniel',  cargo: 'DEV', outro: 45 },
-    { nome: 'Danilo',  cargo: 'DEV', outro: 45 },
-    { nome: 'Lucas',   cargo: 'AGRICULTOR', outro: 48}
+    { nome: 'William', cf: 27, cargo: 'DEV', outro: 45 },
+    { nome: 'Rafael',  cf: 28, cargo: 'APICULTOR', outro: 45 },
+    { nome: 'NAO SEI', cf: 29, cargo: 'DEV', outro: 45 },
+    { nome: 'Danilo',  cf: 30, cargo: 'DEV', outro: 45 },
+    { nome: 'Lucas',   cf: 31, cargo: 'AGRICULTOR', outro: 48}
 ], {
-    flexibilidade  : ['texto', 'texto', 'numero']
+    flexibilidade  : ['texto', 'numero',  'texto', 'numero']
 });
