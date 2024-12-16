@@ -14,8 +14,7 @@ var dataset = Analise.DataStructure([
     { nome: 'William', idade: 42, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
     { nome: 'Rafael',  idade: 25, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
     { nome: 'Daniel',  idade: 19, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'Danilo',  idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 },
-    { nome: 'XXXXXX',  idade: 11, numero1: 11, numero2: 40, numero3: 40, numero4: 40 }
+    { nome: 'Danilo',  idade: 32, numero1: 19, numero2: 40, numero3: 40, numero4: 40 }
 
 ], {
     flexibilidade  : ['texto', 'numero', 'numero', 'numero', 'numero', 'numero']

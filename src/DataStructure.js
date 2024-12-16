@@ -873,9 +873,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			}
 
 			//Cria um novo campo dentro da amostra atual
-			vetorAmostra.adicionarCampo = function( nomeCampo, valorDefinir ){
+			vetorAmostra.adicionarCampo = function( nomeCampo, valorDefinir, flexibilidadeUsada ){
 				context.criarCampoEmBranco( nomeCampo );
 				vetorAmostra.setCampo( nomeCampo, valorDefinir );
+
+				//Adiciona na flexibilidade
+				context.flexibilidade[ context.getIndiceCampo( nomeCampo ) ] = flexibilidadeUsada;
 			}
 
 			//Converte a amostra para JSON
@@ -954,7 +957,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
-	* TODO: Colocar pra ele identificar os tipos de flexibilidade e configurar corretas ao adicionar os campos e criar amostras novas 
+	* TODO: QUASE PRONTO: Colocar pra ele identificar os tipos de flexibilidade e configurar corretas ao adicionar os campos e criar amostras novas 
 	*
 	* MERGE:
 	*	mesclar duas DataStructure(es)
@@ -971,6 +974,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 		//Pegar os campos que tem no OUTRO DataStructure  QUE NÂO EXISTEM NO DataStructure Atual
 		const camposOutro = outraDataStructure.getNomeCampos().filter(function( nomeCampo ){ return !camposEste.includes(nomeCampo) });
+
+		//TODO: Ajusta a flexibilidade do DataStructure atual
 
 		//Percorrer cada amostra do outro DataStructure
 		outraDataStructure.forEach(function( indiceAmostra, amostraOutroVector, contextOutro ){
@@ -989,8 +994,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 					camposOutro.forEach(function( campoOutro ){
 						const valorInserir = amostraOutroVector.getCampo( campoOutro );
 
+						//Obtem a flexibilidade do campo
+						const indiceCampoOutro = outraDataStructure.getNomeCampos().indexOf( campoOutro );
+						const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+
 						//Adiciona o campo apenas na amostraAtual, e nas demais amostras, preenche aquele campo com null se ele não existir
-						amostraAtual.adicionarCampo( campoOutro, valorInserir );
+						amostraAtual.adicionarCampo( campoOutro, valorInserir, flexibilidadeCampoOutro );
 					});	
 
 					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
