@@ -810,6 +810,50 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	/**
 	* @override
+    * Permite fatiar(ou recortar) o DataStructure
+    * @param {linhaInicial} - inicio
+    * @param {linhaFinal} - final
+    * @param {intervalo} - intervalo
+    * @returns {Vectorization.Matrix} - o DataStructure recortado
+    */
+    context.slice = function(linhaInicial, linhaFinal, intervalo=1){
+        let dadosRecortados = [];
+
+        if( linhaInicial < 0 ){
+            throw 'A linhaInicial precisa ser maior ou igual a zero!';
+        }
+
+        if( linhaFinal > context.rows ){
+            throw 'A linhaFinal precisa estar entre as linhas da matriz! valor muito alto!';
+        }
+
+        if( intervalo <= 0 ){
+            throw 'O intervalo precisa ser maior que zero!';
+        }
+
+        for( let i = linhaInicial ; i < linhaFinal ; i = i + intervalo )
+        {
+            dadosRecortados.push( context.getLinha(i).rawProfundo() );
+        }
+
+		const parametrosDados = {
+			campos: context.nomesCampos, 
+			flexibilidade: context.flexibilidade 
+		};
+
+        return Analise.DataStructure( Vectorization.Matrix( 
+			                                                dadosRecortados, 
+			                                                parametrosDados
+														  ).raw(),
+									  parametrosDados
+									);
+    }
+
+    context.recortarLinhas = context.slice;
+    context.sliceLinhas = context.slice;
+
+	/**
+	* @override
     * Obtem um novo DataStructure exatamente igual a este
     * Ou seja, faz um copia do propio objeto, identico, porém sem manter as referencias. 
     * @returns {Analise.DataStructure}
@@ -1206,6 +1250,25 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     context.lineRange = function(linhaInicial, linhaFinal){
         return context.slice(linhaInicial, linhaFinal);
     }
+
+	/**
+	* Extrai as ultimas linhas
+	*/
+	context.ultimas = function( ultimas_linhas ){
+		if(!ultimas_linhas){
+			throw 'Voce precisa dizer quantas linhas são!';
+		}
+		if( context.linhas-ultimas_linhas < 0 ){
+			throw `Impossivel voltar ${ ultimas_linhas } linhas sendo que o seu DataStructure possui apenas ${context.linhas} amostras.`;
+		}
+
+		return context.lineRange( context.linhas-ultimas_linhas, context.linhas );
+	}
+
+	/**
+	* Extrai as ultimas linhas
+	*/
+	context.ultimos = context.ultimas;
 
 	/*
 	Itera sobre cada campo do DataStructure, chamando um callback sincrono theFunction( campo, indiceCampo, valoresCampo, context )
