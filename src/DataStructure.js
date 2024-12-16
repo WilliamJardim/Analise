@@ -966,7 +966,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*
 	* Retorna um novo DataStructure com essa junção feita
 	*/
-	context.mergeWith = function( outraDataStructure, campoChave='nome' ){
+	context.mergeWithCampo = function( outraDataStructure, campoChave='nome' ){
 		
 		const camposEste  = context.getNomeCampos();
 
@@ -1052,6 +1052,41 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				context.injetarFuncoesAmostras();
 			}
 		});
+	}
+
+	/**
+	* MERGE:
+	*	mesclar duas DataStructure(es)
+    *
+	*	Se os IDs(os campos chave) existir, todos os dados da segunda DataStructure serão acrescentados nele, e os novos campos que não existiam na DataStructure A serão criados, e em todas as outras amostras vão ficar como null.
+    *
+	*	Se os IDs não existirem, ele adiciona uma nova amostra com  todos os dados da segunda DataStructure, e e os novos campos que não existiam na DataStructure A serão criados, todas as outras amostras vão ficar como null.
+	*
+	* Retorna um novo DataStructure com essa junção feita
+	*/
+	context.mergeWithCampos = function( outraDataStructure, camposChave=['nome'] ){
+		camposChave.forEach(function(nomeCampoChave){
+			context.mergeWithCampo(outraDataStructure , nomeCampoChave );
+		});
+	}	
+
+	/**
+	* MERGE:
+	*	mesclar duas DataStructure(es)
+    *
+	*	Se o ID(o campo chave) existir, todos os dados da segunda DataStructure serão acrescentados nele, e os novos campos que não existiam na DataStructure A serão criados, e em todas as outras amostras vão ficar como null.
+    *
+	*	Se o ID não existir, ele adiciona uma nova amostra com  todos os dados da segunda DataStructure, e e os novos campos que não existiam na DataStructure A serão criados, todas as outras amostras vão ficar como null.
+	*
+	* Retorna um novo DataStructure com essa junção feita
+	*/
+	context.mergeWith = function( outraDataStructure, camposChave ){
+		if( camposChave instanceof Array ){
+			context.mergeWithCampos(outraDataStructure , camposChave );
+
+		}else if(typeof camposChave == 'string'){
+			context.mergeWithCampo( outraDataStructure, camposChave );
+		}
 	}
 
 	/**
