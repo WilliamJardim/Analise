@@ -45,5 +45,19 @@ E o parametro **flexibilidade** é usado para determinar os tipos dos dados.
 
 # 🛠️ MÈTODOS
 - 🔗 [raw](./raw/page.md)
-- ➕ [inserir](./inserir/page.md)
-
+- 🔗 [clonar](./clonar/page.md): Fazer uma cópia do objeto
+- 🔗 [distinct](./distinct/page.md): Remover valores duplicados
+- 🔗 [mergeWith](./mergeWith/page.md): Junção de dados
+- ➕ [inserir](./inserir/page.md): Adicionar amostras
+- ➕ [adicionarCampo](./adicionarCampo/page.md)
+- ➕ [adicionarColuna](./adicionarColuna/page.md)
+- ➕ [criarColunaCalculada](./criarColunaCalculada/page.md)
+- ❌ [deletarAmostras](./deletarAmostras/page.md)
+- ✂️ [extrairValoresColuna](./extrairValoresColuna/page.md)
+- ✂️ [lineRange](./lineRange/page.md): Recortar linhas
+- ✂️ [slice](./slice/page.md): Recortar linhas
+- 🔍 [findSamples](./findSamples/page.md): Fazer pesquisa de amostras
+- 📂 [loadCSV](./loadCSV/page.md)
+- 📂 [loadJSON](./loadCSV/page.md)
+- 📂 [exportarCSV](./exportarCSV/page.md)
+- 📂 [exportarJSON](./exportarJSON/page.md)
