@@ -967,7 +967,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     * Se o parametro "sobrescrever" for true, então, Se o ID(o campo chave) existir, e os campos existem em ambos os DataStructures, então ele vai sobrescrever o valor dessas amostras no primeiro DataStructure pelos valores que estão no segundo DataStructure
     * Voce pode ignorar alguns campos na hora de sobrescrever, basta atribuir ao campo o valor A.IGNORE.
 	* 
-	* Retorna um novo DataStructure com essa junção feita
+	* Retorna o contexto atual do DataStructure com essa junção feita
 	*/
 	context.mergeWith = function( outraDataStructure, campoChave='nome', sobrescrever=false ){
 		
@@ -1096,6 +1096,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				context.injetarFuncoesAmostras();
 			}
 		});
+
+		return context;
 	}
 
 	/**
