@@ -8,7 +8,7 @@ A data analysis package made from scratch in JavaScript.
 - [Portugues](./READMES/README-pt.md)
 
 # Documentation
-- [Docs](./docs/main.md)
+- [Read Documentation](./docs/main.md)
 
 # Dependency
   - WilliamJardim/VectorizationJS: https://github.com/WilliamJardim/VectorizationJS
