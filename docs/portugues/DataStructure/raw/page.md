@@ -28,10 +28,12 @@ console.log( dadosBrutos );
 
 # RESULTADO:
 ```javascript
-[ 'William', 21 ]
-[ 'Rafael',  25 ]
-[ 'Daniel',  19 ]
-[ 'Danilo',  20 ]
+[
+   [ 'William', 21 ],
+   [ 'Rafael',  25 ],
+   [ 'Daniel',  19 ],
+   [ 'Danilo',  20 ],
+]
 ```
 
 Isso retorna os dados como eles realmente são. 
