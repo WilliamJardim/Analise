@@ -3,9 +3,8 @@
 
 A data analysis package made from scratch in JavaScript.
 
-# Languages
-[English](./READMES/README-en.md)
-[Portugues](./READMES/README-pt.md)
+# Menu
+[Back to Main README](../README.md)
 
 # Dependency
   - WilliamJardim/VectorizationJS: https://github.com/WilliamJardim/VectorizationJS

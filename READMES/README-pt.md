@@ -1,11 +1,10 @@
 # Analise
 ![Logo do projeto](./imagens/icon256x256.png)
 
-A data analysis package made from scratch in JavaScript.
+Um pacote de Análise de Dados criado do zero em JavaScript. 
 
-# Languages
-[English](./READMES/README-en.md)
-[Portugues](./READMES/README-pt.md)
+# Menu
+[Voltar ao README principal](../README.md)
 
 # Dependency
   - WilliamJardim/VectorizationJS: https://github.com/WilliamJardim/VectorizationJS
