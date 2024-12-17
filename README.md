@@ -1,5 +1,5 @@
 # Analise
-![Logo do projeto](./imagens/icon512x512.png)
+![Logo do projeto](./imagens/icone256x256.png)
 
 A data analysis package made from scratch in JavaScript.
 
