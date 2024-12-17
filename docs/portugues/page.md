@@ -3,14 +3,14 @@
 
 Bem vindo a documentação do Analise!
 
-# Como instalar
-- [Download](./instalar/page.md)
-- [Importar](./importar/page.md)
+# 📦 Como instalar
+- [Baixar Biblioteca](./instalar/page.md)
+- [Importar no Projeto](./importar/page.md)
 
-# Tópicos
+# 📖 Tópicos
 Clique no Objeto para ver sua página da documentação:
 
-- [Analise.DataStructure](./DataStructure/page.md)
+- 🔗 [Analise.DataStructure](./DataStructure/page.md)
 
 # Menu
 [Voltar](../main.md)

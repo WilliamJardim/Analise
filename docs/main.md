@@ -6,4 +6,4 @@ Welcome to the Analise documentation!
 # Language
 Choice the language:
 
-- [Portugues](./portugues/page.md)
+- 🔗 [Portugues](./portugues/page.md)
