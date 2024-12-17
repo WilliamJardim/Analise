@@ -1,5 +1,5 @@
 # Analise
-![Logo do projeto](../../../imagens/icon256x256.png)
+![Logo do projeto](../imagens/icon256x256.png)
 
 Welcome to the Analise documentation!
 
