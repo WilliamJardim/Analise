@@ -4,7 +4,7 @@
 Um pacote de Análise de Dados criado do zero em JavaScript. 
 
 # Documentação
-- [Ler Documentação](./docs/main.md)
+- [Ler Documentação](../docs/main.md)
 
 # Menu
 [Voltar ao README principal](../README.md)
