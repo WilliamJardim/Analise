@@ -6,6 +6,41 @@ O DataStructure é uma tabela, mais precisamente, ele é um objeto do tipo **Vec
 
 Para fazer essas análises e manipulações, nós temos alguns métodos:
 
+# CRIAÇÂO DE UMA INSTANCIA:
+Existem duas maneiras principais de criar um DataStructure. 
+
+# CRIANDO UM NOVO DataStructure usando Array de JSONs
+```javascript
+var dataset = Analise.DataStructure([
+    { nome: 'William', idade: 21 },
+    { nome: 'Rafael',  idade: 25 },
+    { nome: 'Daniel',  idade: 19 },
+    { nome: 'Danilo',  idade: 20 }
+
+], {
+    flexibilidade  : ['texto', 'numero']
+});
+```
+
+Mais existe outra forma de fazer isso também:
+
+# CRIANDO UM NOVO DataStructure usando Array de Arrays
+```javascript
+var dataset = Analise.DataStructure([
+    [ 'William',  21 ],
+    [ 'Rafael',   25 ],
+    [ 'Daniel',   19 ],
+    [ 'Danilo',   20 ]
+
+], {
+    campos         : [ 'nome',  'idade' ],
+    flexibilidade  : [ 'texto', 'numero']
+});
+```
+
+Nessa segunda forma, precisamos passar o parametro **campos** para dizer quais são os campos que queremos criar.
+E o parametro **flexibilidade** é usado para determinar os tipos dos dados.
+
 # MÈTODOS
 - [inserir](./inserir/page.md)
 
