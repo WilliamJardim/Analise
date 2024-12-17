@@ -41,6 +41,8 @@ var dataset = Analise.DataStructure([
 Nessa segunda forma, precisamos passar o parametro **campos** para dizer quais são os campos que queremos criar.
 E o parametro **flexibilidade** é usado para determinar os tipos dos dados.
 
+**Existem vários métodos que podemos usar. Abaixo você encontrará uma lista:**
+
 # MÈTODOS
 - [inserir](./inserir/page.md)
 
