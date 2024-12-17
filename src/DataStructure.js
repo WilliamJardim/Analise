@@ -1174,7 +1174,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
-	* Adiciona uma nova amostrar
+	* Adiciona uma nova amostra
 	*/
 	context.inserir = function( amostraObj ){
 		if( Vectorization.Vector.isVector( amostraObj ) == true ){
