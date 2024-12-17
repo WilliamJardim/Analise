@@ -965,7 +965,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*	Se o ID não existir, ele adiciona uma nova amostra com  todos os dados da segunda DataStructure, e e os novos campos que não existiam na DataStructure A serão criados, todas as outras amostras vão ficar como null.
 	*
     * Se o parametro "sobrescrever" for true, então, Se o ID(o campo chave) existir, e os campos existem em ambos os DataStructures, então ele vai sobrescrever o valor dessas amostras no primeiro DataStructure pelos valores que estão no segundo DataStructure
-    *
+    * Voce pode ignorar alguns campos na hora de sobrescrever, basta atribuir ao campo o valor A.IGNORE.
+	* 
 	* Retorna um novo DataStructure com essa junção feita
 	*/
 	context.mergeWith = function( outraDataStructure, campoChave='nome', sobrescrever=false ){
@@ -1018,6 +1019,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 						amostraAtual.adicionarCampo( campoOutro, valorInserir, flexibilidadeCampoOutro );
 					});	
 
+					//Se for permitido sobrescrever campos
 					if( sobrescrever == true )
 					{
 						//Para cada campo do primeiro DataStructure
@@ -1030,8 +1032,14 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 								const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
 								const valorCampoOutro           = amostraOutroVector.getCampo( campoEste );
 
-								//Define o valor da amostra atual deste primeiro DataStructure 
-								amostraAtual.setCampo( campoEste, valorCampoOutro );
+								//Se não for um campo que deve ser ignorado
+								if( valorCampoOutro.raw() != Analise.IGNORE && 
+								    valorCampoOutro.raw() != null &&
+									!isNaN(valorCampoOutro.raw())
+								){
+									//Define o valor da amostra atual deste primeiro DataStructure 
+									amostraAtual.setCampo( campoEste, valorCampoOutro );
+								}
 							}
 
 						});

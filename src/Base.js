@@ -1,5 +1,8 @@
 Analise = {};
 
+//Constantes
+Analise.IGNORE = '$#_IGNORE_CAMPO'; //Usado para ignorar um campo quando vai usar o método mergeWith com o parametro sobrescrever=true. Caso o valor do campo seja Analise.IGNORE, o valor deste campo não será sobrescrito
+
 Analise.libs = {
     Vectorization: window.Vectorization
 };
@@ -52,3 +55,6 @@ Analise.Base = function( config, parametrosAdicionais={} ){
 
     return context;
 }
+
+//Alias
+window.A = window.Analise;

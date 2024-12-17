@@ -21,11 +21,11 @@ var dataset = Analise.DataStructure([
 });
 
 var dataset2 = Analise.DataStructure([
-    { nome: 'William', cf: 27, idade: 2555, cargo: 'DEV', outro: 45 },
-    { nome: 'Rafael',  cf: 28, idade: 2555, cargo: 'APICULTOR', outro: 45 },
-    { nome: 'NAO SEI', cf: 29, idade: 2555, cargo: 'DEV', outro: 45 },
-    { nome: 'Danilo',  cf: 30, idade: 2555, cargo: 'DEV', outro: 45 },
-    { nome: 'Lucas',   cf: 31, idade: 2555, cargo: 'AGRICULTOR', outro: 48}
+    { nome: 'William', cf: 27, idade: A.IGNORE, cargo: 'DEV',        outro: 45 },
+    { nome: 'Rafael',  cf: 28, idade: 2555,     cargo: 'APICULTOR',  outro: 45 },
+    { nome: 'NAO SEI', cf: 29, idade: 2555,     cargo: 'DEV',        outro: 45 },
+    { nome: 'Danilo',  cf: 30, idade: 2555,     cargo: 'DEV',        outro: 45 },
+    { nome: 'Lucas',   cf: 31, idade: 2555,     cargo: 'AGRICULTOR', outro: 48}
 ], {
     flexibilidade  : ['texto', 'numero', 'numero',  'texto', 'numero']
 });
