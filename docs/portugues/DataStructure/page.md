@@ -45,5 +45,5 @@ E o parametro **flexibilidade** é usado para determinar os tipos dos dados.
 
 # 🛠️ MÈTODOS
 - 🔗 [raw](./raw/page.md)
-- 🔗 [inserir](./inserir/page.md)
+- ➕ [inserir](./inserir/page.md)
 

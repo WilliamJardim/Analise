@@ -10,7 +10,7 @@ Bem vindo a documentação do Analise!
 # 📖 Tópicos
 Clique no Objeto para ver sua página da documentação:
 
-- 🔗 [Analise.DataStructure](./DataStructure/page.md)
+- 📊 [Analise.DataStructure](./DataStructure/page.md)
 
 # Menu
 [Voltar](../main.md)
