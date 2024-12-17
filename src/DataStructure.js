@@ -964,9 +964,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     *
 	*	Se o ID não existir, ele adiciona uma nova amostra com  todos os dados da segunda DataStructure, e e os novos campos que não existiam na DataStructure A serão criados, todas as outras amostras vão ficar como null.
 	*
+    * Se o parametro "sobrescrever" for true, então, Se o ID(o campo chave) existir, e os campos existem em ambos os DataStructures, então ele vai sobrescrever o valor dessas amostras no primeiro DataStructure pelos valores que estão no segundo DataStructure
+    *
 	* Retorna um novo DataStructure com essa junção feita
 	*/
-	context.mergeWith = function( outraDataStructure, campoChave='nome' ){
+	context.mergeWith = function( outraDataStructure, campoChave='nome', sobrescrever=false ){
 		
 		const campoChaveIsArray  = campoChave instanceof Array ? true : false; 
 		const campoChaveIsString = (!campoChaveIsArray && typeof campoChave == 'string') ? true : false; 
@@ -1008,12 +1010,32 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 						const valorInserir = amostraOutroVector.getCampo( campoOutro );
 
 						//Obtem a flexibilidade do campo
-						const indiceCampoOutro = outraDataStructure.getNomeCampos().indexOf( campoOutro );
+						const indiceCampoOutro          = outraDataStructure.getNomeCampos().indexOf( campoOutro );
 						const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
 
+						//Se o campo não existe no DataStructure atual
 						//Adiciona o campo apenas na amostraAtual, e nas demais amostras, preenche aquele campo com null se ele não existir
 						amostraAtual.adicionarCampo( campoOutro, valorInserir, flexibilidadeCampoOutro );
 					});	
+
+					if( sobrescrever == true )
+					{
+						//Para cada campo do primeiro DataStructure
+						camposEste.forEach(function( campoEste ){
+
+							//Se o campo atual deste primeiro DataStructure tambem existe no segundo DataStructure
+							if( contextOutro.existeCampo( campoEste ) == true ){
+								//Obtem a flexibilidade do campo
+								const indiceCampoOutro          = outraDataStructure.getNomeCampos().indexOf( campoEste );
+								const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+								const valorCampoOutro           = amostraOutroVector.getCampo( campoEste );
+
+								//Define o valor da amostra atual deste primeiro DataStructure 
+								amostraAtual.setCampo( campoEste, valorCampoOutro );
+							}
+
+						});
+					}
 
 					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
 					break;
@@ -1039,8 +1061,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				});
 
 				//Vai apenas adicionar a amostra 'amostraOutroVector' ao DataStructure atual
-				//const camposFaltaram = camposOutro;
-				//context.inserir( amostraOutroVector.rawProfundo().concat( Array(camposFaltaram.length+1).fill(0) ) );
 
 				//Monta os campos que vai adicionar
 				const estruturaCamposAmostra = {};
