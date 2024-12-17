@@ -44,7 +44,7 @@ E o parametro **flexibilidade** é usado para determinar os tipos dos dados.
 **Existem vários métodos que podemos usar. Abaixo você encontrará uma lista:**
 
 # 🛠️ MÈTODOS
-- 🔗 [raw](./raw/page.md)
+- 🔗 [raw](./raw/page.md): Obter o contéudo de forma bruta/crua
 - 🔗 [clonar](./clonar/page.md): Fazer uma cópia do objeto
 - 🔗 [distinct](./distinct/page.md): Remover valores duplicados
 - 🔗 [mergeWith](./mergeWith/page.md): Junção de dados
