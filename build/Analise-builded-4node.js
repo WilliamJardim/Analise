@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 17/12/2024 - 13:55:06*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 17/12/2024 - 14:46:11*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -8944,7 +8944,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
     * Se o parametro "sobrescrever" for true, então, Se o ID(o campo chave) existir, e os campos existem em ambos os DataStructures, então ele vai sobrescrever o valor dessas amostras no primeiro DataStructure pelos valores que estão no segundo DataStructure
     * Voce pode ignorar alguns campos na hora de sobrescrever, basta atribuir ao campo o valor A.IGNORE.
 	* 
-	* Retorna um novo DataStructure com essa junção feita
+	* Retorna o contexto atual do DataStructure com essa junção feita
 	*/
 	context.mergeWith = function( outraDataStructure, campoChave='nome', sobrescrever=false ){
 		
@@ -9073,43 +9073,139 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				context.injetarFuncoesAmostras();
 			}
 		});
+
+		return context;
 	}
 
 	/**
-	* Adiciona uma nova amostrar
+	* SUBSTITUIR AMOSTRAS:
+	*	substitui certos campos das amostras do primeiro DataStructure, com os valores que estão no segundo DataStructure
+	*
+    * Se o ID(o campo chave) existir, e os campos existem em ambos os DataStructures, então ele vai sobrescrever o valor dessas amostras no primeiro DataStructure pelos valores que estão no segundo DataStructure
+    * Voce pode ignorar alguns campos na hora de sobrescrever, basta atribuir ao campo o valor A.IGNORE.
+	* 
+	* Retorna o contexto atual do DataStructure com essa substituição feita
+	*/
+	context.substituirCamposAmostras = function( outraDataStructure, campoChave='nome' ){
+		
+		const campoChaveIsArray  = campoChave instanceof Array ? true : false; 
+		const campoChaveIsString = (!campoChaveIsArray && typeof campoChave == 'string') ? true : false; 
+		const camposEste  = context.getNomeCampos();
+
+		//Percorrer cada amostra do outro DataStructure
+		outraDataStructure.forEach(function( indiceAmostra, amostraOutroVector, contextOutro ){
+
+			//Verifica se o campo NOME da amostra atual deste DataStructure tem exatamente o mesmo valor que o campo NOME do OUTRO DataStructure 
+			let seCorresponde = false;
+			for( let i = 0 ; i < context.linhas ; i++){
+				const amostraAtual = context.getAmostra(i);
+
+				//Se algum campo chave foi correspondido
+				if( 
+					//Se o parametro for um array de nome de campos, usa eles como chave, PRA VERIFICAR se alguma amostra for correspondido
+					(
+						campoChaveIsArray  == true && 
+						campoChave.map(function( campoChaveAtual ){
+											return amostraAtual.getCampo(campoChaveAtual).raw() == amostraOutroVector.getCampo(campoChaveAtual).raw()
+									})
+									.some(( condicao )=>{ return condicao == true }) == true
+					) 
+
+					//Ou então, se existe apenas um unico campo chave, usa apenas ele PRA VERIFICAR se alguma amostra for correspondido
+					|| (campoChaveIsString == true && amostraAtual.getCampo(campoChave).raw() == amostraOutroVector.getCampo(campoChave).raw() )
+
+				){
+					seCorresponde = true; //Sinaliza que encontrou alguma correspondencia
+
+					//Para cada campo do primeiro DataStructure
+					camposEste.forEach(function( campoEste ){
+
+						//Se o campo atual deste primeiro DataStructure tambem existe no segundo DataStructure
+						if( contextOutro.existeCampo( campoEste ) == true ){
+							//Obtem a flexibilidade do campo
+							const indiceCampoOutro          = outraDataStructure.getNomeCampos().indexOf( campoEste );
+							const flexibilidadeCampoOutro   = outraDataStructure.flexibilidade[ indiceCampoOutro ];
+							const valorCampoOutro           = amostraOutroVector.getCampo( campoEste );
+
+							//Se não for um campo que deve ser ignorado
+							if( valorCampoOutro != undefined &&
+								valorCampoOutro.raw() != Analise.IGNORE && 
+								valorCampoOutro.raw() != null &&
+								!isNaN(valorCampoOutro.raw())
+							){
+								//Define o valor da amostra atual deste primeiro DataStructure 
+								amostraAtual.setCampo( campoEste, valorCampoOutro );
+							}
+						}
+
+					});
+
+					//Não faz sentido ter mais de uma amostra que bate com a chave, pois muitas vezes o campo chave vai ser unico, por isso usei 'break'
+					break;
+				}
+			}
+
+		});
+
+		return context;
+	}
+
+	/**
+	* Adiciona uma ou mais nova(s) amostra(s). 
+	* Para isso basta passar um JSON da amostra, ou um ARRAY DE JSONs das amostras
+	*
+	* >>>> Exemplo com uma única amostra (JSON) <<<<
+	* 	@example
+	* 	context.inserir({ nome: 'William',  cf: 30, idade: 32 })
+	*
+	* >>>> Exemplo com múltiplas amostras (Array de JSONs) <<<<
+	* 	@example
+	* 	context.inserir([
+	*   	{ nome: 'William',  cf: 30, idade: 32 },
+	*   	{ nome: 'Pedro',  cf: 30, idade: 45 }
+	* 	]);
 	*/
 	context.inserir = function( amostraObj ){
-		if( Vectorization.Vector.isVector( amostraObj ) == true ){
+		// Caso o argumento seja um array, iterar e inserir cada amostra individualmente
+		if (Array.isArray(amostraObj)) {
+			amostraObj.forEach((amostra) => context.inserir(amostra));
+		} 
+		// Caso seja uma única amostra (Vector ou Objeto)
+		else {
 
-			if( amostraObj.length != context.colunas ){
-				throw `A nova amostra ${amostraObj} tem ${ amostraObj.length } colunas, porém, esse DataStructure possui ${context.colunas} colunas!`
-			}
+			if( Vectorization.Vector.isVector( amostraObj ) == true ){
 
-			context.push(amostraObj);
-
-		//Caso não seja um Vectorization.Vector, então, ele pode um JSON
-		}else if( typeof amostraObj == 'object' ) {
-
-			const camposAmostra = Object.keys( amostraObj );
-			const valoresAmostra = Object.values( amostraObj );
-			const temTodosOsCampos = context.nomesCampos.every( ( campo )=>{ return amostraObj[campo] != undefined } );
-
-			if(!temTodosOsCampos){
-				throw `A amostra precisa ter os campos [${ context.nomesCampos }] `;
-			}
-
-			//Verifica se existe algum campo novo
-			camposAmostra.forEach(function( nomeCampo ){
-
-				if( context.existeCampo( nomeCampo ) == false )
-				{
-					throw `O campo ${ nomeCampo } não existe! `;
+				if( amostraObj.length != context.colunas ){
+					throw `A nova amostra ${amostraObj} tem ${ amostraObj.length } colunas, porém, esse DataStructure possui ${context.colunas} colunas!`
 				}
 
-			});
+				context.push(amostraObj);
 
-			//Adiciona a amostra
-			context.push(valoresAmostra);
+			//Caso não seja um Vectorization.Vector, então, ele pode um JSON
+			}else if( typeof amostraObj == 'object' ) {
+
+				const camposAmostra = Object.keys( amostraObj );
+				const valoresAmostra = Object.values( amostraObj );
+				const temTodosOsCampos = context.nomesCampos.every( ( campo )=>{ return amostraObj[campo] != undefined } );
+
+				if(!temTodosOsCampos){
+					throw `A amostra precisa ter os campos [${ context.nomesCampos }] `;
+				}
+
+				//Verifica se existe algum campo novo
+				camposAmostra.forEach(function( nomeCampo ){
+
+					if( context.existeCampo( nomeCampo ) == false )
+					{
+						throw `O campo ${ nomeCampo } não existe! `;
+					}
+
+				});
+
+				//Adiciona a amostra
+				context.push(valoresAmostra);
+			}
+
 		}
 	}
 
