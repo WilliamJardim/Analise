@@ -4,8 +4,8 @@
 A data analysis package made from scratch in JavaScript.
 
 # Languages
-[English](./READMES/README-en.md)
-[Portugues](./READMES/README-pt.md)
+- [English](./READMES/README-en.md)
+- [Portugues](./READMES/README-pt.md)
 
 # Dependency
   - WilliamJardim/VectorizationJS: https://github.com/WilliamJardim/VectorizationJS
