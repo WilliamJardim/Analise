@@ -49,15 +49,16 @@ E o parametro **flexibilidade** é usado para determinar os tipos dos dados.
 - 🔗 [distinct](./distinct/page.md): Remover valores duplicados
 - 🔗 [mergeWith](./mergeWith/page.md): Junção de dados
 - ➕ [inserir](./inserir/page.md): Adicionar amostras
-- ➕ [adicionarCampo](./adicionarCampo/page.md)
-- ➕ [adicionarColuna](./adicionarColuna/page.md)
-- ➕ [criarColunaCalculada](./criarColunaCalculada/page.md)
-- ❌ [deletarAmostras](./deletarAmostras/page.md)
-- ✂️ [extrairValoresColuna](./extrairValoresColuna/page.md)
+- ➕ [adicionarCampo](./adicionarCampo/page.md): Criar um novo campo
+- ➕ [adicionarColuna](./adicionarColuna/page.md): Adicionar uma nova coluna
+- ➕ [criarColunaCalculada](./criarColunaCalculada/page.md): Criar uma nova coluna calculada
+- ❌ [deletarAmostras](./deletarAmostras/page.md): Deletar amostras
+- ✂️ [extrairValoresColuna](./extrairValoresColuna/page.md): Extrair valores de uma coluna
+- ✂️ [extrairValoresColunas](./extrairValoresColuna/page.md): Extrair valores de várias colunas
 - ✂️ [lineRange](./lineRange/page.md): Recortar linhas
 - ✂️ [slice](./slice/page.md): Recortar linhas
 - 🔍 [findSamples](./findSamples/page.md): Fazer pesquisa de amostras
-- 📂 [loadCSV](./loadCSV/page.md)
-- 📂 [loadJSON](./loadCSV/page.md)
-- 📂 [exportarCSV](./exportarCSV/page.md)
-- 📂 [exportarJSON](./exportarJSON/page.md)
+- 📂 [loadCSV](./loadCSV/page.md): Carregar um arquivo CSV
+- 📂 [loadJSON](./loadCSV/page.md): Carregar um arquivo JSON
+- 📂 [exportarCSV](./exportarCSV/page.md): Exportar para um arquivo CSV
+- 📂 [exportarJSON](./exportarJSON/page.md): Exportar para um arquivo JSON
