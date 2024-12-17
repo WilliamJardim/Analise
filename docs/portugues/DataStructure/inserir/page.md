@@ -1,7 +1,7 @@
 # Analise
 ![Logo do projeto](../../../../imagens/icon256x256.png)
 
-# inserir
+# ➕ inserir
 O método **Inserir** serve para inserir novas amostras ao DataStructure. 
 
 Abaixo você verá exemplos de uso desse método **Inserir**. Mais para ficar mais fácil de entender, considere o seguinte objeto DataStructure:
