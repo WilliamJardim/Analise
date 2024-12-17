@@ -1155,12 +1155,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*
 	*/
 	context.substituirValorColuna = function( nomeCampo, criterios, replaceFunctionOrValue ){
-		const pesquisaApagar         = context.findSamples(criterios);
+		const pesquisaSubstituir         = context.findSamples(criterios);
 		const indiceColunaSubstituir = context.getIndiceCampo(nomeCampo);
 
-		for( let i = 0 ; i < pesquisaApagar.length ; i++ )
+		for( let i = 0 ; i < pesquisaSubstituir.length ; i++ )
 		{
-			const amostraSubstituir   = pesquisaApagar[i];
+			const amostraSubstituir   = pesquisaSubstituir[i];
 			const indiceAtual         = amostraSubstituir.index;
 			const valorExistente      = amostraSubstituir[ indiceColunaSubstituir ];
 
