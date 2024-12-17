@@ -27,7 +27,7 @@ console.log( dadosBrutos );
 ```
 
 # RESULTADO:
-```json
+```javascript
 [ 'William', 21 ]
 [ 'Rafael',  25 ]
 [ 'Daniel',  19 ]
