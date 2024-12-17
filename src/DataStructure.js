@@ -1174,40 +1174,61 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
-	* Adiciona uma nova amostra
+	* Adiciona uma ou mais nova(s) amostra(s). 
+	* Para isso basta passar um JSON da amostra, ou um ARRAY DE JSONs das amostras
+	*
+	* >>>> Exemplo com uma única amostra (JSON) <<<<
+	* 	@example
+	* 	context.inserir({ nome: 'William',  cf: 30, idade: 32 })
+	*
+	* >>>> Exemplo com múltiplas amostras (Array de JSONs) <<<<
+	* 	@example
+	* 	context.inserir([
+	*   	{ nome: 'William',  cf: 30, idade: 32 },
+	*   	{ nome: 'Pedro',  cf: 30, idade: 45 }
+	* 	]);
 	*/
 	context.inserir = function( amostraObj ){
-		if( Vectorization.Vector.isVector( amostraObj ) == true ){
+		// Caso o argumento seja um array, iterar e inserir cada amostra individualmente
+		if (Array.isArray(amostraObj)) {
+			amostraObj.forEach((amostra) => context.inserir(amostra));
+		} 
+		// Caso seja uma única amostra (Vector ou Objeto)
+		else {
 
-			if( amostraObj.length != context.colunas ){
-				throw `A nova amostra ${amostraObj} tem ${ amostraObj.length } colunas, porém, esse DataStructure possui ${context.colunas} colunas!`
-			}
+			if( Vectorization.Vector.isVector( amostraObj ) == true ){
 
-			context.push(amostraObj);
-
-		//Caso não seja um Vectorization.Vector, então, ele pode um JSON
-		}else if( typeof amostraObj == 'object' ) {
-
-			const camposAmostra = Object.keys( amostraObj );
-			const valoresAmostra = Object.values( amostraObj );
-			const temTodosOsCampos = context.nomesCampos.every( ( campo )=>{ return amostraObj[campo] != undefined } );
-
-			if(!temTodosOsCampos){
-				throw `A amostra precisa ter os campos [${ context.nomesCampos }] `;
-			}
-
-			//Verifica se existe algum campo novo
-			camposAmostra.forEach(function( nomeCampo ){
-
-				if( context.existeCampo( nomeCampo ) == false )
-				{
-					throw `O campo ${ nomeCampo } não existe! `;
+				if( amostraObj.length != context.colunas ){
+					throw `A nova amostra ${amostraObj} tem ${ amostraObj.length } colunas, porém, esse DataStructure possui ${context.colunas} colunas!`
 				}
 
-			});
+				context.push(amostraObj);
 
-			//Adiciona a amostra
-			context.push(valoresAmostra);
+			//Caso não seja um Vectorization.Vector, então, ele pode um JSON
+			}else if( typeof amostraObj == 'object' ) {
+
+				const camposAmostra = Object.keys( amostraObj );
+				const valoresAmostra = Object.values( amostraObj );
+				const temTodosOsCampos = context.nomesCampos.every( ( campo )=>{ return amostraObj[campo] != undefined } );
+
+				if(!temTodosOsCampos){
+					throw `A amostra precisa ter os campos [${ context.nomesCampos }] `;
+				}
+
+				//Verifica se existe algum campo novo
+				camposAmostra.forEach(function( nomeCampo ){
+
+					if( context.existeCampo( nomeCampo ) == false )
+					{
+						throw `O campo ${ nomeCampo } não existe! `;
+					}
+
+				});
+
+				//Adiciona a amostra
+				context.push(valoresAmostra);
+			}
+
 		}
 	}
 
