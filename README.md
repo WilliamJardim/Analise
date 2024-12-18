@@ -4,6 +4,8 @@
 A data analysis package made from scratch in JavaScript.
 
 # 🌐 Languages
+Choice the language:
+
 - 🇺🇸 [English](./READMES/README-en.md)
 - 🇧🇷 [Portugues](./READMES/README-pt.md)
 
