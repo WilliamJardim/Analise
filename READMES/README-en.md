@@ -7,7 +7,7 @@ A data analysis package made from scratch in JavaScript.
 - 📖 [Read Documentation](../docs/main.md)
 
 # Menu
-[Back to Main README](../README.md)
+[Back to Main README](https://github.com/WilliamJardim/Analise)
 
 # Dependency
   - WilliamJardim/VectorizationJS: https://github.com/WilliamJardim/VectorizationJS
