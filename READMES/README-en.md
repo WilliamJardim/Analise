@@ -3,8 +3,8 @@
 
 A data analysis package made from scratch in JavaScript.
 
-# Documentation
-- [Read Documentation](../docs/main.md)
+# 📄 Documentation
+- 📖 [Read Documentation](../docs/main.md)
 
 # Menu
 [Back to Main README](../README.md)
