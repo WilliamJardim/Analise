@@ -1,4 +1,4 @@
-# Analise
+# 📊 Analise
 ![Logo do projeto](../../../../imagens/icon256x256.png)
 
 Bem vindo a documentação do Analise!

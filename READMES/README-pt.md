@@ -1,4 +1,4 @@
-# Analise
+# 📊 Analise
 ![Logo do projeto](../imagens/icon256x256.png)
 
 Um pacote de Análise de Dados criado do zero em JavaScript. 
