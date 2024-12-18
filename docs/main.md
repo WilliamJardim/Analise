@@ -1,9 +1,9 @@
-# Analise
+# 📊 Analise
 ![Logo do projeto](../imagens/icon256x256.png)
 
 Welcome to the Analise documentation!
 
-# Language
+# 🌐 Language
 Choice the language:
 
-- 🔗 [Portugues](./portugues/page.md)
+- 🇧🇷 [Portugues](./portugues/page.md)
