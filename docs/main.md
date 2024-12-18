@@ -7,3 +7,6 @@ Welcome to the Analise documentation!
 Choice the language:
 
 - 🇧🇷 [Portugues](./portugues/page.md)
+
+# Menu
+[Back to the README](../README.md)
