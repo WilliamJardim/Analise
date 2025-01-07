@@ -13,7 +13,7 @@ if(typeof window === 'undefined'){
     window.VECTORIZATION_BUILD_TYPE = 'navegador';
 }
 
-/* COMPILADO: 11/12/2024 - 15:35:57*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
+/* COMPILADO: 2/1/2025 - 22:55:02*//* ARQUIVO VECTORIZATION: ../src/Root.js*/
 /*
  * File Name: Root.js
  * Author Name: William Alves Jardim
@@ -3718,6 +3718,258 @@ window.Vectorization.Vector = function( config=[], classConfig={} ){
     }
 
     /**
+    * Calcula as diferenças com os valores anteriores:
+    * 
+    * Para cada número no Vector, vai subtrair ele com um número anterior(ou melhor dizendo com o número cujo índice seja "indiceNumero - quantidadeElementosAtraz", caso exista. Se não existir, ele coloca um valor inválido. 
+    * Voce pode incluir um parâmetro adicional que permite fazer uma subtração acumulada 
+    * 
+    * Por exemplo:
+    *   V.Vector([10,5,2,50,9]).diferencaValores(1).raw()
+    * 
+    *      Ele vai retornar: [NaN, -5, -3, 48, -41]
+    * 
+    * Então, ele vai fazer:
+    *   10 - NADA = NADA
+    *   5 - 10 = -5
+    *   2 - 5 =  -3
+    *   50 - 2 = 48
+    *   9 - 50 = -41
+    * 
+    *   NOTA: Ou seja, resultando nesse vetor [NaN, -5, -3, 48, -41]
+    * 
+    * @param {number} quantidadeElementosAtraz
+    * @param {string} acumulacao
+    * 
+    * @returns {Vectorization.Vector}
+    */
+    context.diferencaValores = function( quantidadeElementosAtraz, acumulacao="nenhuma" ){
+        if( !quantidadeElementosAtraz ){
+            throw 'Voce precisa dizer quantos elementos atraz de cada elemento voce quer usar!';
+        }
+
+        let vetorResultado = Vectorization.Vector([]);
+
+        context.forEach(function(indiceAtual, valorAtual, contextoEste){
+
+            const indiceAnterior = indiceAtual - Number(quantidadeElementosAtraz);
+            const valorAnterior  = context.lerIndice( indiceAnterior );
+
+            if( valorAnterior != undefined ) {
+                const subtracaoFeita   = valorAtual - valorAnterior;
+                const subtracaoTratada = context.usarEscalares == true ? Vectorization.Scalar(subtracaoFeita) : subtracaoFeita;
+
+                vetorResultado.adicionarElemento( subtracaoTratada );
+
+            //Caso não exista
+            }else{
+                vetorResultado.adicionarElemento( context.usarEscalares == true ? Vectorization.Scalar( NaN ) : NaN );
+            }
+
+        });
+
+        return vetorResultado;
+    }
+
+    /**
+    * Subfatiar este Vector em varias partes, cada uma com uma CERTA QUANTIDADE FIXA DE ELEMENTOS
+    *  
+    * Agrupa sequencialmente os números, de acordo com O TAMANHO DA FATIA , por exemplo, se for uma fatia de 7 números, então, ele vai dividir o Vector em subgrupos, cada um tendo 7 números cada.
+    * Ou seja, o Vector seria dividido de 7 em 7 números. Ou seja, cada fatia teria 7 números.
+    * 
+    * NOTA: Cada parte vai ser um novo Vectorization.Vector, contendo números dentro. 
+    * 
+    * @param {Number} tamanhoFatia - O tamanho das fatias(quantidade de números por fatia)
+    * @param {Number} iniciarEm - O indice que ele vai iniciar o fatiamento
+    * 
+    * Exemplo:
+    *   V.Vector([5, 10, 5, 6]).subfatiar(2).soma().raw()
+    *       vai retornar: [15, 11]
+    *  
+    *   o uso do Envelope permite fazer operações mais facilmente.
+    * 
+    * @returns { Vectorization.Envelope }
+    */
+    context.subfatiar = function( tamanhoFatia, iniciarEm=0 ){
+        if(!tamanhoFatia){
+            throw 'Voce precisa definir uma quantidade de números para as fatias!';
+        }
+        if( tamanhoFatia > context.length ){
+            console.warn(`O tamanho de fatia ${tamanhoFatia} é maior do que a quantidade de números deste Vector`);
+        }
+
+        let fatiasFeitas = [];
+        let indiceFinalFatia = (tamanhoFatia - iniciarEm);;
+
+        for( let indiceAtual = iniciarEm ; indiceAtual < context.length ; indiceAtual += tamanhoFatia ){
+
+            const sliceAtual = context.clonar()
+                                      .slice( indiceAtual, indiceFinalFatia );
+
+            indiceFinalFatia = indiceFinalFatia + tamanhoFatia;
+
+            fatiasFeitas.push( sliceAtual );
+        }
+
+        return Vectorization.Envelope(fatiasFeitas);
+    }
+    
+    /**
+    * Concatena dois Vector(s), retornando um novo Vector contendo a junção desses dois.
+    * @param {Vectorization.Vector} outroVector 
+    * @returns {Vectorization.Vector}
+    */
+    context.concat = function( outroVector ){
+        return Vectorization.Vector( context.raw().concat( Vectorization.Vector.isVectorizationVector( outroVector ) ? outroVector.raw() : outroVector ), context.classConfig );
+    }
+
+    /**
+    * Cria varias "áreas deslizantes". Cada área vai ter <N> números.
+    * Pode ser usado para calcular médias móveis, desvio padrão movel, variancia movel, etc. 
+    * 
+    * Em outras palavras, O método 'deslizes' serve para gerar vários deslizes por assim dizer, ou seja, vai deslizando os elementos deste Vector, gerando outros sub Vetores com uma mesma quantidade fixa de elementos, cada parte contendo seu slice atual da posição atual ATÈ a posição atual MAIS O TAMANHO DO PEDAÇO. 
+    * O método retorna um objeto Envelope.
+    * 
+    * @returns {Vectorization.Envelope}
+    */
+    context.deslizes = function( quantidadeDeslizes=4, iniciarEm=0 ){
+        let deslizesProntos = Vectorization.Envelope([]);
+
+        if( String(quantidadeDeslizes).indexOf('.') != -1 ){
+            throw `O parametro quantidadeDeslizes tem valor '${quantidadeDeslizes}', porém ele precisa ser inteiro!. `;
+        }
+
+        if( iniciarEm < 0 ){
+            throw `O parametro 'iniciarEm' tem valor ${ iniciarEm }. Porém, ele precisa ser positivo!`;
+        }
+
+        if( quantidadeDeslizes < 0 ){
+            throw `O parametro 'quantidadeDeslizes' tem valor ${ quantidadeDeslizes }. Porém, ele precisa ser positivo!`;
+        }
+
+        if( quantidadeDeslizes == 0 ){
+            throw `O parametro 'quantidadeDeslizes' tem valor ${ quantidadeDeslizes }. Porém, ele precisa ser maior que zero!`;
+        }
+
+        //Preenche com zeros nos deslizes iniciais
+        let primeiroPosicaoQueVaiTerInicio = context.clonar().slice(0, quantidadeDeslizes);
+        let posicaoAtualDoInicio = 1;
+
+        for( let i = 0 ; i < primeiroPosicaoQueVaiTerInicio.length-1 ; i++ ){
+            let valoresColocarNessaIteracao = primeiroPosicaoQueVaiTerInicio.slice( 0, posicaoAtualDoInicio );
+            posicaoAtualDoInicio++;
+
+            let quantosFaltamNessaIteracao = Math.abs( valoresColocarNessaIteracao.raw().length - quantidadeDeslizes );
+
+            let arrayPreencher = Vectorization.Vector( Array( quantosFaltamNessaIteracao ).fill(0) ).concat( valoresColocarNessaIteracao );
+
+            /* 
+            NOTAS DE DESENVOLVIMENTO 02/01/2025
+
+            TODO: Identificar quantos faltam para interar a quantidade de 'quantidadeDeslizes'
+            TODO: Ir preenchendo a direita os números que faltam
+            TODO EXEMPLO:
+            [
+                [0, 0, 0, 1]
+                [0, 0, 0, 2]
+                [0, 0, 0, 3]
+                [1, 2, 3, 4]
+                [2, 3, 4, 5]
+                [3, 4, 5, 6]
+                [4, 5, 6, 7]
+                [5, 6, 7, 8]
+                [6, 7, 8, 9]
+                [7, 8, 9, 10]
+                [8, 9, 10, 11]
+                [9, 10, 11, 12]
+                [10, 11, 12, 13]
+            ]
+            
+            BUGS:
+
+                AO INVEZ DE SER [0, 0, 0, 1]
+                                [0, 0, 0, 2]
+                                [0, 0, 0, 3]
+                                [.... etc]
+
+                PRECISARIA SER:
+                            [0, 0, 0, 1]
+                            [0, 0, 1, 2]
+                            [0, 1, 2, 3]
+                            [.... etc]
+            */
+            //arrayPreencher.definirElementoNoIndice( primeiroPosicaoQueVaiTerJanela.length-1, primeiroPosicaoQueVaiTerJanela[ 0+i ] );
+            
+            deslizesProntos.adicionarObjeto( arrayPreencher );
+        }
+
+        //Continua para os "delizes" que vão estar completos(que não vão faltar nenhuma amostra)
+        for( let i = iniciarEm ; i < context.length ; i++ ){
+
+            //Se a proxima iteração for ultrapassar os limites deste Vector, interompe, pois ja terminou
+            if( i + quantidadeDeslizes > context.length ){
+                break;
+            }
+
+            const sliceAtual = context.clonar()
+                                      .slice( i, i + quantidadeDeslizes );
+
+            deslizesProntos.adicionarObjeto( sliceAtual );
+        }
+
+        return deslizesProntos;
+    }
+
+    /**
+    * Calcula a variancia dos números.
+    * Baseado em conceitos matemáticos de estatística.
+    * 
+    * Isso é, mede o quanto os números do Vector estão se afastando da média.
+    * Quanto menor o valor, mais perto da média os números desse Vector estão.
+    * @returns {Number} - a variancia
+    */
+    context.variancia = function(){
+
+        /**
+        * A média aritmética normal mesmo 
+        */
+        const mediaVetor = context.media();
+
+        const diferencasAoQuadrado = Vectorization.Vector([]);
+
+        /**
+        * Para cada número dentro deste Vector 
+        */
+        context.paraCadaElemento(function( indiceElemento, numeroAtual ){
+
+            const subtracao = numeroAtual - mediaVetor;
+
+            /**
+            * Adiciona a subtração atual no vetor 'diferencasAoQuadrado'
+            */
+            diferencasAoQuadrado.adicionarElemento( Math.pow(subtracao, 2 ) );
+
+        });
+
+        const qtdeElementosVetor = context.tamanho();
+        const variancia          = diferencasAoQuadrado.soma() / ( qtdeElementosVetor-1 );
+
+        return variancia;
+    }
+
+    /**
+    * Calcula o desvio padrão.
+    * Baseado nos conceitos estatísticos de variância.
+    * 
+    * Desvio padrão significa o quanto os números do Vector estão se afastando da média.
+    * Quanto menor o valor, mais perto da média os números desse Vector estão.
+    * 
+    * NOTA: Muito semelhante à variancia. É basicamente uma maneira diferente de ver a variancia. 
+    */
+    context.desvioPadrao = function(){
+        return Math.sqrt( context.variancia() );
+    }
+
+    /**
     * Método que converte este Vectorization.Vector para um Vectorization.Vector avançado, onde cada elemento dentro do mesmo é um Vectorization.Scalar
     */
     context._vectorElementos2Escalares = function(vectorClassConfig={}){
@@ -5232,6 +5484,12 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
             dadosRecortados.push( context.getLinha(i).raw() );
         }
 
+        if( context.flexibilidade ){
+            return Vectorization.Matrix(dadosRecortados, {
+                flexibilidade: context.flexibilidade || []
+            });
+        }
+
         return Vectorization.Matrix(dadosRecortados);
     }
 
@@ -5375,6 +5633,117 @@ window.Vectorization.Matrix = function( config, classConfig={} ){
         }else{
             return valoresColuna;
         }
+    }
+
+    /**
+    * Subfatiar esta matriz em varias partes, cada uma com uma CERTA QUANTIDADE FIXA DE AMOSTRAS
+    *  
+    * Agrupa sequencialmente amostras, de acordo com O TAMANHO DA FATIA , por exemplo, se for uma fatia de 7 amostras, então, ele vai dividir o dataset em subgrupos, cada um tendo 7 amostras cada.
+    * Ou seja, o dataset seria dividido de 7 em 7 amostras. Ou seja, cada fatia teria 7 amostras.
+    * 
+    * NOTA: Cada parte vai ser uma nova Vectorization.Matrix, contendo Vectorization.Vector(s) dentro. Ou seja, cada Vectorization.Vector dentro dessa matrix resultado, vai ser uma amostra.
+    * 
+    * @param {Number} tamanhoFatia - O tamanho das fatias(quantidade de amostras por fatia)
+    * @param {Number} iniciarEm - O indice que ele vai iniciar o fatiamento
+    * 
+    * @returns { Vectorization.Envelope }
+    */
+    context.subfatiar = function( tamanhoFatia, iniciarEm=0 ){
+        if(!tamanhoFatia){
+            throw 'Voce precisa definir uma quantidade de amostras para as fatias!';
+        }
+        if( tamanhoFatia > context.linhas ){
+            console.warn(`O tamanho de fatia ${tamanhoFatia} é maior do que a quantidade de linhas da matrix`);
+        }
+
+        let fatiasFeitas = [];
+        let indiceFinalFatia = (tamanhoFatia - iniciarEm);
+
+        for( let indiceAtual = iniciarEm ; indiceAtual < context.linhas ; indiceAtual += tamanhoFatia ){
+
+            const sliceAtual = context.clonar()
+                                      .slice( indiceAtual, indiceFinalFatia );
+
+            indiceFinalFatia = indiceFinalFatia + tamanhoFatia;
+
+            fatiasFeitas.push( sliceAtual );
+        }
+
+        return Vectorization.Envelope(fatiasFeitas);
+    }
+
+    /**
+    * Concatena duas matrizes 
+    */
+    context.concat = function( outraMatrix ){
+        let matrixAtualArray = context.clonar();
+
+        outraMatrix.paraCadaLinha(function(indiceLinha, vetorDaLinha){
+            matrixAtualArray.push( vetorDaLinha );
+        });
+
+        return matrixAtualArray;
+    }
+
+    /**
+    * Cria varias "áreas deslizantes". Cada área vai ter <N> números.
+    * Pode ser usado para calcular médias móveis, desvio padrão movel, variancia movel, etc. 
+    * 
+    * Em outras palavras, O método 'deslizes' serve para gerar vários deslizes por assim dizer, ou seja, vai deslizando as linhas desta Matrix, gerando outras sub Matrizes com uma mesma quantidade fixa de linhas, cada parte contendo seu slice atual da posição atual ATÈ a posição atual MAIS O TAMANHO DO PEDAÇO. 
+    * O método retorna um objeto Envelope.
+    * 
+    * @returns {Vectorization.Envelope}
+    */
+    context.deslizes = function( quantidadeDeslizes=4, iniciarEm=0 ){
+        let deslizesProntos = Vectorization.Envelope([]);
+
+        if( String(quantidadeDeslizes).indexOf('.') != -1 ){
+            throw `O parametro quantidadeDeslizes tem valor '${quantidadeDeslizes}', porém ele precisa ser inteiro!. `;
+        }
+
+        if( iniciarEm < 0 ){
+            throw `O parametro 'iniciarEm' tem valor ${ iniciarEm }. Porém, ele precisa ser positivo!`;
+        }
+
+        if( quantidadeDeslizes < 0 ){
+            throw `O parametro 'quantidadeDeslizes' tem valor ${ quantidadeDeslizes }. Porém, ele precisa ser positivo!`;
+        }
+
+        if( quantidadeDeslizes == 0 ){
+            throw `O parametro 'quantidadeDeslizes' tem valor ${ quantidadeDeslizes }. Porém, ele precisa ser maior que zero!`;
+        }
+
+        //Preenche com zeros nos deslizes iniciais
+        let primeiroPosicaoQueVaiTerInicio = context.clonar().slice(0, quantidadeDeslizes);
+        let posicaoAtualDoInicio = 1;
+
+        for( let i = 0 ; i < primeiroPosicaoQueVaiTerInicio.linhas-1 ; i++ ){
+            let valoresColocarNessaIteracao = primeiroPosicaoQueVaiTerInicio.slice( 0, posicaoAtualDoInicio );
+            posicaoAtualDoInicio++;
+
+            let quantosFaltamNessaIteracao = Math.abs( valoresColocarNessaIteracao.raw().length - quantidadeDeslizes );
+
+            let arrayPreencher = Vectorization.Matrix( Array( quantosFaltamNessaIteracao )
+                                                       .fill( Array( primeiroPosicaoQueVaiTerInicio.raw()[0].length ).fill(0) ) )
+                                              .concat( valoresColocarNessaIteracao );
+
+            deslizesProntos.adicionarObjeto( arrayPreencher );
+        }
+
+        for( let i = iniciarEm ; i < context.linhas ; i++ ){
+
+            //Se a proxima iteração for ultrapassar os limites(a ultima linha desta Matrix), interompe, pois ja terminou
+            if( i + quantidadeDeslizes > context.linhas ){
+                break;
+            }
+
+            const sliceAtual = context.clonar()
+                                      .slice( i, i + quantidadeDeslizes );
+
+            deslizesProntos.adicionarObjeto( sliceAtual );
+        }
+
+        return deslizesProntos;
     }
 
     context.extrairValoresLinha = context.getLinha;
@@ -7842,6 +8211,177 @@ for( let i = 0 ; i < todasConfiguracoesClassConfig.quantidadeDentro ; i++ )
 
 module.exports = window.Vectorization.Random._translations;
 /* FIM DO ARQUIVO VECTORIZATION: ../src/Random-translation.js*/
+/* ARQUIVO VECTORIZATION: ../src/Envelope.js*/
+/*
+ * File Name: Envelope.js
+ * Author Name: William Alves Jardim
+ * Author Email: williamalvesjardim@gmail.com
+ * 
+ * Description: Um objeto chamado literalmente de Envelope, para permitir "envelopar" varios objetos de diversos tipos, e permitir executar algum método em todos eles.
+ * Ao executar um método em um Envelope, ele vai executar esse método em cada objeto que ele está armazenando. E vai retornar um novo Envelope, conténdo os resultados, que podem ser números, vetores, matrizes, ou qualquer coisa que o método escolhido para ser aplicado retorne.
+ * 
+ * LICENSE: MIT
+*/
+
+//Compatibilidade com NodeJS
+if( typeof window === 'undefined' ){
+    global.window = global; 
+
+    if( window.Vectorization.Random == undefined ){
+        require('./Root'); 
+        require('./Random'); 
+    }
+
+    if( window.Vectorization.Utilidades == undefined ){
+        require('./Utilidades'); 
+    }
+    
+//Se for navegador
+}else{
+    if (typeof module === 'undefined') {
+        globalThis.module = {};
+    }
+}
+
+if(!window.Vectorization){ window.Vectorization = {} };
+
+window.Vectorization.Envelope = function( arrayObjetos=[], classConfig={} ){
+    //Define a tradução
+    classConfig['translations'] = window.Vectorization.Envelope._translations || null;
+
+    let classeBase = window.Vectorization.Base({... classConfig});
+
+    //Aplica a tradução dos métodos, pra ser capaz de entender nomes de atributos em outros idiomas
+    classConfig = classeBase.translateAttributes_andReturn(classConfig, classConfig['translations']() );
+
+    let context = window.Vectorization.Base({... classConfig});
+
+    context.objectName = 'Envelope';
+    context.path = 'Vectorization.Envelope';
+    context.arrayObjetos = arrayObjetos;
+
+    context.adicionarObjeto = function( objeto ){
+        context.arrayObjetos.push( objeto );
+    }
+
+    context.raw = function(){
+        return context.arrayObjetos;
+    }
+
+    /*
+    * Calcula a média de cada objeto que estiver dentro do Envelope
+    * O tipo de retorno não tem uma flexibilide definida. Vai depender os objetos que temos dentro do Envelope e do tipo de retorno que o método usado retorna
+    */
+    //context.media = function(){
+    //    let novoEnvelope = Vectorization.Envelope([], classConfig);
+        
+    //    for( let i = 0 ; i < context.arrayObjetos.length ; i++ ){
+    //        novoEnvelope.adicionarObjeto( context.arrayObjetos[i].media() );
+    //    }
+
+    //    return novoEnvelope;
+    //}
+
+    context.storedClassConfig = classConfig || {};
+
+    //Se existir uma tradução para a classe
+    if(context._translations && typeof context._translations === 'function'){
+        context.applyTranslations( context._translations() );
+    }
+
+    return new Proxy(context, {
+        /*
+        * Calcula o resultado do NOME_ALGUM_MÈTODO de cada objeto que estiver dentro do Envelope
+        * O tipo de retorno não tem uma flexibilide definida. Vai depender os objetos que temos dentro do Envelope e do tipo de retorno que o método usado retorna
+        *
+        * PERMITE FAZER envelope.NOME_ALGUM_MÈTODO(); 
+        * 
+        * Por exemplo:
+        *   V.Envelope([ vec1, vec2, matrix1 ]).algumaMetodo().raw()
+        * 
+        * Ele vai tentar executar o método 'algumaMetodo' dentro de cada objeto: vec1, vec2 e matrix1
+        */
+        get: function(target, prop) {
+            if (typeof prop === 'string' && typeof target[prop] === 'undefined') {
+                // Verifica se o método existe em cada objeto dentro de arrayObjetos
+                return function(...args) {
+                    // Cria um Envelope para guardar os resultados
+                    let novoEnvelope = Vectorization.Envelope([], classConfig);
+
+                    // Tenta executar o método em cada objeto e adiciona o resultado ao novo Envelope
+                    for (let i = 0; i < target.arrayObjetos.length; i++) 
+                    {
+                        let obj = target.arrayObjetos[i];
+
+                        if (typeof obj[prop] === 'function') {
+                            novoEnvelope.adicionarObjeto(obj[prop](...args));  // Executa o método no objeto
+                        }else{
+                            novoEnvelope.adicionarObjeto(null);  // INDICA QUE O MÈTODO NÂO EXISTIA
+                        }
+                    }
+
+                    return novoEnvelope;
+                };
+            }
+            return target[prop];
+        },
+
+        set: function(target, prop, value) {
+          return Reflect.set(target, prop, value);
+        }
+    });
+}
+
+/**
+* Métodos estáticos
+*/
+window.Vectorization.Envelope.isEnvelope = function(obj){
+    return (obj.objectName != undefined && obj.objectName == 'Envelope');
+}
+
+module.exports = window.Vectorization.Envelope;
+/* FIM DO ARQUIVO VECTORIZATION: ../src/Envelope.js*/
+/* ARQUIVO VECTORIZATION: ../src/Envelope-translation.js*/
+/*
+ * File Name: Envelope-translation.js
+ * Author Name: William Alves Jardim
+ * Author Email: williamalvesjardim@gmail.com
+ * 
+ * Description: Provide translations for class methods
+ * 
+ * LICENSE: MIT
+*/
+
+//Compatibilidade com NodeJS
+if( typeof window === 'undefined' ){
+    global.window = global; 
+    
+//Se for navegador
+}else{
+    if (typeof module === 'undefined') {
+        globalThis.module = {};
+    }
+}
+
+if(!window.Vectorization){ window.Vectorization = {} };
+
+window.Vectorization.Envelope._translations = function(){
+    const translatedMethods = {
+        "raw": "bruto"
+    };
+
+    const translatedAttributes = {
+        "path": "caminho"
+    };
+
+    return {
+        translatedMethods: translatedMethods,
+        translatedAttributes: translatedAttributes
+    };
+}
+
+module.exports = window.Vectorization.Envelope._translations;
+/* FIM DO ARQUIVO VECTORIZATION: ../src/Envelope-translation.js*/
 /* ARQUIVO VECTORIZATION: ../src/Vectorization.js*/
 /*
  * File Name: Vectorization.js
