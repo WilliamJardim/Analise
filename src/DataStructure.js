@@ -1785,6 +1785,55 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return newArray;
 	}
 
+	/**
+	* Agrupa amostras usando algumas colunas
+	* Por exemplo, ele pode ser usado para agrupar todas as amostras de vendas que foram feitas NO DIA DA SEMANA
+	* Por exemplo, Ao agrupar por DIA DA SEMANA, teriamos um DataStructure para as segundas feitas, outro para as terças feitas, etc...
+	*/
+	context.agrupar = function( colunaOuColunas ){
+		const colunasAgrupar   = colunaOuColunas instanceof Array ? colunaOuColunas : [colunaOuColunas];
+		const agrupagens       = {};
+
+		/**
+		* Para cada coluna que queremos agrupar 
+		*/
+		colunasAgrupar.forEach(function( nomeColuna, indiceColuna ){
+
+			agrupagens[ nomeColuna ] = {};
+			
+			const valoresPossiveis = context.extrairValoresCampo( nomeColuna )
+									        .valoresUnicos()
+										    .raw();
+
+			/**
+			* Para cada valor possivel DESSA COLUNA
+			*/
+			valoresPossiveis.forEach(function( valorAtual, indiceValorAtual ){
+
+				//Cria um objeto para armazenar TODAS AS AMOSTRAS QUE TEM O VALOR ATUAL
+				let datastructureValorAtual = Analise.DataStructure([], {...context._config});
+
+				/**Para cada amostra */
+				context.paraCadaLinha(function(indiceAmostra, vetorAmostra){
+
+					//Se a amostra tem o valor VALOR na coluna
+					if( vetorAmostra.getCampo( nomeColuna ).raw() == valorAtual ){
+						datastructureValorAtual.push( vetorAmostra.clonar().raw() );
+					}
+
+				});
+
+				agrupagens[ nomeColuna ][ valorAtual ] = datastructureValorAtual;
+
+			});
+
+		});
+
+		return agrupagens;
+
+		
+	}
+
 	/*** Metodos de matematica ***/
 
 	/**
