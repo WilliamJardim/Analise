@@ -42,5 +42,17 @@ dataset.inserir([
 
 ```
 
+**Também é possivel adicionar várias amostras de uma vez usando matrizes:**
+
+```javascript
+
+//Adicionando uma nova amostra
+dataset.inserir([
+    ['Pedro', 30]
+    ['Luiz',  30]
+]);
+
+```
+
 # Menu
 [Voltar](../page.md)
