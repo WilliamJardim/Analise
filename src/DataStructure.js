@@ -1187,11 +1187,38 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*   	{ nome: 'William',  cf: 30, idade: 32 },
 	*   	{ nome: 'Pedro',  cf: 30, idade: 45 }
 	* 	]);
+	*
+	* >>>> Exemplo com múltiplas amostras (Array de Array) <<<<
+	* 	@example
+	* 	context.inserir([
+	*   	[ 'William', 30, 32 ],
+	*		[ 'Pedro',   30, 45 ]
+	* 	]);
 	*/
 	context.inserir = function( amostraObj ){
 		// Caso o argumento seja um array, iterar e inserir cada amostra individualmente
-		if (Array.isArray(amostraObj)) {
+
+		if ( Array.isArray(amostraObj) == true && 
+			 //O que esta dentro do Array principal NÂO PODE SER UM ARRAY. POIS SE FOR, ENTÂO VAMOS TER QUE USAR OUTRA ESTRATEGIA
+			 Array.isArray(amostraObj[0]) == false 
+		) {
 			amostraObj.forEach((amostra) => context.inserir(amostra));
+
+		//Se o que está dentro do array principal for um Array tambem
+		}else if( Array.isArray(amostraObj) == true && 
+				  //O que esta dentro do Array principal SE FOR UM ARRAY, ENTÂO VAMOS TER QUE USAR ESSA ESTRATEGIA
+				  Array.isArray(amostraObj[0]) == true  
+		){
+			amostraObj.forEach((amostra) => {
+
+				let array2objeto = {};
+				amostra.forEach(function( valorCampo, indiceCampo ){
+					array2objeto[ context.nomesCampos[ indiceCampo ] ] = valorCampo;
+				});
+
+				context.inserir(array2objeto);
+
+			});
 		} 
 		// Caso seja uma única amostra (Vector ou Objeto)
 		else {
