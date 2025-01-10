@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 7/1/2025 - 18:19:50*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 9/1/2025 - 22:39:13*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -9704,11 +9704,38 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*   	{ nome: 'William',  cf: 30, idade: 32 },
 	*   	{ nome: 'Pedro',  cf: 30, idade: 45 }
 	* 	]);
+	*
+	* >>>> Exemplo com múltiplas amostras (Array de Array) <<<<
+	* 	@example
+	* 	context.inserir([
+	*   	[ 'William', 30, 32 ],
+	*		[ 'Pedro',   30, 45 ]
+	* 	]);
 	*/
 	context.inserir = function( amostraObj ){
 		// Caso o argumento seja um array, iterar e inserir cada amostra individualmente
-		if (Array.isArray(amostraObj)) {
+
+		if ( Array.isArray(amostraObj) == true && 
+			 //O que esta dentro do Array principal NÂO PODE SER UM ARRAY. POIS SE FOR, ENTÂO VAMOS TER QUE USAR OUTRA ESTRATEGIA
+			 Array.isArray(amostraObj[0]) == false 
+		) {
 			amostraObj.forEach((amostra) => context.inserir(amostra));
+
+		//Se o que está dentro do array principal for um Array tambem
+		}else if( Array.isArray(amostraObj) == true && 
+				  //O que esta dentro do Array principal SE FOR UM ARRAY, ENTÂO VAMOS TER QUE USAR ESSA ESTRATEGIA
+				  Array.isArray(amostraObj[0]) == true  
+		){
+			amostraObj.forEach((amostra) => {
+
+				let array2objeto = {};
+				amostra.forEach(function( valorCampo, indiceCampo ){
+					array2objeto[ context.nomesCampos[ indiceCampo ] ] = valorCampo;
+				});
+
+				context.inserir(array2objeto);
+
+			});
 		} 
 		// Caso seja uma única amostra (Vector ou Objeto)
 		else {
@@ -10300,6 +10327,77 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		})
 
 		return newArray;
+	}
+
+	/**
+	* Agrupa amostras usando algumas colunas
+	* Por exemplo, ele pode ser usado para agrupar todas as amostras de vendas que foram feitas NO DIA DA SEMANA
+	* Por exemplo, Ao agrupar por DIA DA SEMANA, teriamos um DataStructure para as segundas feitas, outro para as terças feitas, etc...
+	*/
+	context.agrupar = function( colunaOuColunas ){
+		const colunasAgrupar   = colunaOuColunas instanceof Array ? colunaOuColunas : [colunaOuColunas];
+
+		const agrupagens       = {
+			objectName: 'Agrupador',
+			path: 'Analise.DataStructure.Agrupador',
+		};
+
+		/**
+		* Para cada coluna que queremos agrupar 
+		*/
+		colunasAgrupar.forEach(function( nomeColuna, indiceColuna ){
+
+			agrupagens[ nomeColuna ] = {};
+			//Cria um getter para acessar grupagens[ nomeColuna ]
+			agrupagens[`get${ nomeColuna[0].toUpperCase() + nomeColuna.slice(1, nomeColuna.length) }`] = function(){
+				return agrupagens[nomeColuna];
+			}
+			
+			const valoresPossiveis = context.extrairValoresCampo( nomeColuna )
+									        .valoresUnicos()
+										    .raw();
+
+			/**
+			* Para cada valor possivel DESSA COLUNA
+			*/
+			valoresPossiveis.forEach(function( valorAtual, indiceValorAtual ){
+
+				//Cria um objeto para armazenar TODAS AS AMOSTRAS QUE TEM O VALOR ATUAL
+				let datastructureValorAtual = Analise.DataStructure([], {...context._config});
+
+				datastructureValorAtual.indexOrigem = {};
+				datastructureValorAtual.getIndices = function(){
+					return datastructureValorAtual.indexOrigem;
+				}
+
+				/**Para cada amostra */
+				context.paraCadaLinha(function(indiceAmostra_iteracao, vetorAmostra){
+
+					const indiceAmostra = vetorAmostra.index;
+
+					//Se a amostra tem o valor VALOR na coluna
+					if( vetorAmostra.getCampo( nomeColuna ).raw() == valorAtual ){
+						datastructureValorAtual.push( vetorAmostra.clonar().raw() );
+
+						//Faz um link para a ultima amostra adicionada, com o indice que estava no DataStructure de origem
+						datastructureValorAtual.indexOrigem[ indiceAmostra ] = context.ultimos(1)[0];
+					}
+
+				});
+
+				agrupagens[ nomeColuna ][ valorAtual ] = datastructureValorAtual;
+				//Cria um getter para acessar agrupagens[ nomeColuna ][ valorAtual ]
+				agrupagens[ nomeColuna ][`get${ String(valorAtual)[0].toUpperCase() + String(valorAtual).slice(1, String(valorAtual).length) }`] = function(){
+					return agrupagens[ nomeColuna ][ valorAtual ];
+				}
+
+			});
+
+		});
+
+		return agrupagens;
+
+		
 	}
 
 	/*** Metodos de matematica ***/
