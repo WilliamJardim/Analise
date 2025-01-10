@@ -1792,7 +1792,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*/
 	context.agrupar = function( colunaOuColunas ){
 		const colunasAgrupar   = colunaOuColunas instanceof Array ? colunaOuColunas : [colunaOuColunas];
-		const agrupagens       = {};
+
+		const agrupagens       = {
+			objectName: 'Agrupador',
+			path: 'Analise.DataStructure.Agrupador',
+		};
 
 		/**
 		* Para cada coluna que queremos agrupar 
@@ -1800,6 +1804,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		colunasAgrupar.forEach(function( nomeColuna, indiceColuna ){
 
 			agrupagens[ nomeColuna ] = {};
+			//Cria um getter para acessar grupagens[ nomeColuna ]
+			agrupagens[`get${ nomeColuna[0].toUpperCase() + nomeColuna.slice(1, nomeColuna.length) }`] = function(){
+				return agrupagens[nomeColuna];
+			}
 			
 			const valoresPossiveis = context.extrairValoresCampo( nomeColuna )
 									        .valoresUnicos()
@@ -1813,17 +1821,31 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				//Cria um objeto para armazenar TODAS AS AMOSTRAS QUE TEM O VALOR ATUAL
 				let datastructureValorAtual = Analise.DataStructure([], {...context._config});
 
+				datastructureValorAtual.indexOrigem = {};
+				datastructureValorAtual.getIndices = function(){
+					return datastructureValorAtual.indexOrigem;
+				}
+
 				/**Para cada amostra */
-				context.paraCadaLinha(function(indiceAmostra, vetorAmostra){
+				context.paraCadaLinha(function(indiceAmostra_iteracao, vetorAmostra){
+
+					const indiceAmostra = vetorAmostra.index;
 
 					//Se a amostra tem o valor VALOR na coluna
 					if( vetorAmostra.getCampo( nomeColuna ).raw() == valorAtual ){
 						datastructureValorAtual.push( vetorAmostra.clonar().raw() );
+
+						//Faz um link para a ultima amostra adicionada, com o indice que estava no DataStructure de origem
+						datastructureValorAtual.indexOrigem[ indiceAmostra ] = context.ultimos(1)[0];
 					}
 
 				});
 
 				agrupagens[ nomeColuna ][ valorAtual ] = datastructureValorAtual;
+				//Cria um getter para acessar agrupagens[ nomeColuna ][ valorAtual ]
+				agrupagens[ nomeColuna ][`get${ String(valorAtual)[0].toUpperCase() + String(valorAtual).slice(1, String(valorAtual).length) }`] = function(){
+					return agrupagens[ nomeColuna ][ valorAtual ];
+				}
 
 			});
 

@@ -35,3 +35,9 @@ var dataset = Analise.DataStructure([
 const agruparPeloNomeDia = dataset.agrupar('nome');
 
 console.log(agruparPeloNomeDia)
+
+const indices = agruparPeloNomeDia.getNome()
+                                  .getSabado()
+                                  .getIndices();
+
+console.log(indices)                                 
