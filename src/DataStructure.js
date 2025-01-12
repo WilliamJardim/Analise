@@ -1910,7 +1910,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 
 		return new Analise.DataStructure(amostrasSelecionadas, 
-										 context._config);
+										 {
+											flexibilidade: context.flexibilidade,
+											campos       : context.nomesCampos
+										 });
 
 	}
 
