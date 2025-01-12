@@ -1883,6 +1883,37 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		
 	}
 
+	/*** Metodos de reamostragem ***/
+
+	/**
+	* Um método de reamonstragem em que as amostras selecionadas podem se repetir
+	* @param {Number} quantidadeAmostras
+	* @returns {Analise.DataStructure}
+	*/
+	context.bootstrapping = function( quantidadeAmostras ){
+
+		let amostrasSelecionadas = [];
+
+		if(!quantidadeAmostras){
+			throw Error(`Voce precisa escolher uma quantidade de amostras!`);
+		}
+
+		//Enquanto não terminar de escolher N amostras
+		while(amostrasSelecionadas.length < quantidadeAmostras)
+		{
+			const numeroAleatorio  = Vectorization.Random.gerarNumeroInteiroAleatorio( 0, context.linhas );
+
+			const amostraEscolhida = context.getLinha( numeroAleatorio )
+											.rawProfundo();
+
+			amostrasSelecionadas.push( amostraEscolhida );
+		}
+
+		return new Analise.DataStructure(amostrasSelecionadas, 
+										 context._config);
+
+	}
+
 	/*** Metodos de matematica ***/
 
 	/**
