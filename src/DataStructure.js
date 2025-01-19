@@ -101,19 +101,26 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
             }
 
 
-        }else{
-            if( context.flexibilidade != undefined )
-            {
-                const ultimaFlexibilidade = context.flexibilidade[ context.columns ];
+        //Se for um Vectorization.Vector
+		}else{
+			if( context.flexibilidade != undefined )
+			{
+				const ultimaFlexibilidade = context.flexibilidade[ 
+																//Se tem o columns, usa ele
+																context.columns 
+																			? context.columns 
+																			//se nao usa o length, caso seja um Vector
+																			: context.flexibilidade.length-1                                                               
+																];
 
-                return Vectorization.BendableVector(novaMatrix, {
-                                                        flexibilidade: Array(novaMatrix.length).fill( ultimaFlexibilidade  )
-                                                    });
+				return Vectorization.BendableVector(novaMatrix, {
+														flexibilidade: Array(novaMatrix.length).fill( ultimaFlexibilidade  )
+													});
 
-            }else{
-                return Vectorization.Vector(novaMatrix);
-            }
-        }
+			}else{
+				return Vectorization.Vector(novaMatrix);
+			}
+		}
     }
 
 	/**
