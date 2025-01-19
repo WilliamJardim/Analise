@@ -1628,7 +1628,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		context.adicionarColuna( novaColuna, novoCampo );
 
 		// Atualizar metadados
-		context.nomesCampos.push(novoCampo);
+		//context.nomesCampos.push(novoCampo);
 		context.mapearNomes();
 	};
 
@@ -1661,7 +1661,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		context.adicionarColuna( novaColuna, novoCampo );
 
 		// Atualizar metadados
-		context.nomesCampos.push(novoCampo);
+		//context.nomesCampos.push(novoCampo);
 
 		context.mapearNomes();
 	};
