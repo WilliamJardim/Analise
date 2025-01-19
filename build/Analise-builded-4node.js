@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 10/1/2025 - 13:12:36*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 18/1/2025 - 22:01:52*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -8982,6 +8982,51 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* @override
+	* Sobrescreve o método "map" para ajustar a flexibilidade
+	*
+	* Percorre cada linha da matrix, aplicando uma função de callback, retornando um resultado
+    * @param {Function} callback(index, element, context)
+    * @returns {Vectorization.Vector or Vectorization.Matrix}
+	* 
+	*/
+	context.map = function(callback){
+        let novaMatrix = [];
+
+        for( let i = 0 ; i < context.content.length ; i++ )
+        {
+            novaMatrix[i] = callback( i, context.content[i], context );
+        }
+
+        //Se a função de callback ao ser aplicada resultar numa matrix, então ele converte resultado para Matrix
+        if( Vectorization.Vector.isVector( novaMatrix[0] ) ){
+            if( context.flexibilidade != undefined )
+            {
+                return Vectorization.Matrix(novaMatrix, {
+                                                flexibilidade: context.flexibilidade
+                                            });
+
+            }else{
+                return Vectorization.Matrix(novaMatrix);
+            }
+
+
+        }else{
+            if( context.flexibilidade != undefined )
+            {
+                const ultimaFlexibilidade = context.flexibilidade[ context.columns ];
+
+                return Vectorization.BendableVector(novaMatrix, {
+                                                        flexibilidade: Array(novaMatrix.length).fill( ultimaFlexibilidade  )
+                                                    });
+
+            }else{
+                return Vectorization.Vector(novaMatrix);
+            }
+        }
+    }
+
+	/**
 	* Exporta os dados deste DataStructure para um formato JSON
 	* @returns {Array}
 	*/
@@ -10469,6 +10514,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*	dataset.criarColunaCalculadaExplicita(['campo1', 'campo2'], (campo1, campo2) => { return campo1 + campo2 }, 'soma' );
 	*/
 	context.criarColunaCalculadaExplicita = function(camposEntrada, funcao, novoCampo) {
+		//Modifica a flexibilidade adicionando a flexibilidade adequada para o retorno da função aplicada
+        context.flexibilidade.push( 
+            typeof funcao(0, context.getLinha(0)) == 'string' 
+            ? 'texto' 
+            : 
+            typeof funcao(0, context.getLinha(0)) == 'number' 
+            ? 'numero' 
+            : 'texto'
+        );
+
 		// Validar se os campos de entrada existem
 		const indicesEntrada = context.getIndiceCampos(camposEntrada);
 
@@ -10483,7 +10538,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		context.adicionarColuna( novaColuna, novoCampo );
 
 		// Atualizar metadados
-		context.nomesCampos.push(novoCampo);
+		//context.nomesCampos.push(novoCampo);
 		context.mapearNomes();
 	};
 
@@ -10497,6 +10552,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	*	dataset.criarColunaCalculada( (indiceAmostra, amostra, contextoDataset) => { return amostra.getCampo('campo1') + amostra.getCampo('campo2') }, 'soma' );
 	*/
 	context.criarColunaCalculada = function(funcao, novoCampo) {
+        //Modifica a flexibilidade adicionando a flexibilidade adequada para o retorno da função aplicada
+        context.flexibilidade.push( 
+            typeof funcao(0, context.getLinha(0)) == 'string' 
+            ? 'texto' 
+            : 
+            typeof funcao(0, context.getLinha(0)) == 'number' 
+            ? 'numero' 
+            : 'texto'
+        );
+
 		// Iterar sobre as linhas e aplicar a função
 		const novaColuna = context.map((indiceLinha, linha) => {
 			return funcao(indiceLinha, linha);
@@ -10506,7 +10571,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		context.adicionarColuna( novaColuna, novoCampo );
 
 		// Atualizar metadados
-		context.nomesCampos.push(novoCampo);
+		//context.nomesCampos.push(novoCampo);
+
 		context.mapearNomes();
 	};
 
@@ -10791,6 +10857,40 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return agrupagens;
 
 		
+	}
+
+	/*** Metodos de reamostragem ***/
+
+	/**
+	* Um método de reamonstragem em que as amostras selecionadas podem se repetir
+	* @param {Number} quantidadeAmostras
+	* @returns {Analise.DataStructure}
+	*/
+	context.bootstrapping = function( quantidadeAmostras ){
+
+		let amostrasSelecionadas = [];
+
+		if(!quantidadeAmostras){
+			throw Error(`Voce precisa escolher uma quantidade de amostras!`);
+		}
+
+		//Enquanto não terminar de escolher N amostras
+		while(amostrasSelecionadas.length < quantidadeAmostras)
+		{
+			const numeroAleatorio  = Vectorization.Random.gerarNumeroInteiroAleatorio( 0, context.linhas );
+
+			const amostraEscolhida = context.getLinha( numeroAleatorio )
+											.rawProfundo();
+
+			amostrasSelecionadas.push( amostraEscolhida );
+		}
+
+		return new Analise.DataStructure(amostrasSelecionadas, 
+										 {
+											flexibilidade: context.flexibilidade,
+											campos       : context.nomesCampos
+										 });
+
 	}
 
 	/*** Metodos de matematica ***/
