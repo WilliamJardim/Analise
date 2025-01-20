@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 19/1/2025 - 15:22:23*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 20/1/2025 - 16:04:08*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -10864,6 +10864,32 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		return agrupagens;
 
 		
+	}
+
+	/**
+	* Muda a organização dos campos.
+	* O que estava no ultimo pode ser arrastado para o primeiro, e vice versa.
+	* Para mudar a ordem dos campos, voce precisa passar um novo Array contendo as colunas na nova organiação que voce deseja.
+	*
+	* NOTA: Esta função permite organizar os campos na ordem que voce quiser. Voce pode omitir campos que voce não queira usar. 
+	*
+	* @param { Array } novaOrdem - A nova ordem que voce deseja deixar o DataStructure atual.
+	* @returns {Analise.DataStructure} - Um novo DataStructure com as colunas organizadas na nova ordem
+	*/
+	context.organizarCampos = function( novaOrdem ){
+
+		return Analise.DataStructure(
+
+				context.rawProfundo(), 
+
+				//Extrai apenas os campos que queremos com exatamente a nova ordem que queremos
+				{
+					campos: context.nomesCampos, 
+					flexibilidade: context.flexibilidade
+				}
+
+		).extrairValoresCampos(novaOrdem);
+
 	}
 
 	/*** Metodos de reamostragem ***/
