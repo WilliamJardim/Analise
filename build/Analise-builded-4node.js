@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 20/1/2025 - 16:04:08*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 27/1/2025 - 21:34:12*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -8921,7 +8921,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	//Tratar os dados iniciais
 	//Se for um array de JSON
-	if( typeof dadosIniciais == 'object' && !(dadosIniciais[0] instanceof Array) )
+	if( dadosIniciais instanceof Array && typeof dadosIniciais == 'object' && !(dadosIniciais[0] instanceof Array) )
 	{
 		tipoDadosIniciais = 'JSON_ARRAY';
 
@@ -8942,6 +8942,65 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			//Joga os dados da amostra no Array
 			dadosIniciais_tratados.push(valoresAmostra);
 		}
+
+	//Se for um JSON contendo Arrays
+	}else if( !(dadosIniciais instanceof Array) && 
+			  typeof dadosIniciais == 'object'  && 
+			  //O Object.keys(dadosIniciais)[0] obtem o nome do primeiro campo
+			  dadosIniciais[ Object.keys(dadosIniciais)[0] ] instanceof Array 
+	){
+		tipoDadosIniciais = 'JSON_OF_ARRAY';
+		dadosIniciais_tratados = []; //Sinaliza de forma explicita que esse Array será usado
+
+		const nomesCampos = Object.keys(dadosIniciais);
+		const primeiroCampo = nomesCampos[0];
+
+		/**
+		* Obtém a quantidade de amostras, pois aqui, a quantidade de amostras vai ser a quantidade de elementos que um campo possui, visto que, cada linha vai ter esses mesmos campos.
+		*
+		* Por exemplo:
+		*	{
+		*		campo1: [1,2,3],
+		*   	campo2: [4,5,6]
+		* 	} 
+		*
+		* Isso seriam 3 amostras. Que seriam: [1,4], [2,5] e [3,6].
+		* Note que a ordem está invertida(ou transposta)
+		*/
+		const qtdeAmostras = dadosIniciais[primeiroCampo].length;
+
+		//Para cada amostra
+		for( let i = 0 ; i < qtdeAmostras ; i++ )
+		{	
+			const indiceAmostraAtual = i;
+
+			/**
+			* Crio um Array pra armazenar todos os valores dessa amostra que ele está pegando do JSON
+			*/
+			const dadosAmostraAtual = [];
+
+			//Para cada campo
+			(nomesCampos)
+			.forEach(function( nomeCampo, indiceCampo ){
+				
+				const todosValoresCampo   = dadosIniciais[ nomeCampo ];
+
+				/** 
+				* O valor do campo "nomeCampo" da iteração atual NA AMOSTRA NÙMERO "indiceAmostraAtual" 
+				* Fiz isso por que, quero obter exatamente o valor daquele campo especifico NA AMOSTRA ESPECIFICA
+				*/
+				const valorCampoDaAmostra = todosValoresCampo[ indiceAmostraAtual ];
+
+				dadosAmostraAtual.push( valorCampoDaAmostra );
+			});
+
+			/**
+			* Adiciona os valores dessa amostra atual(ou seja, os valores dos campos da amostra atuaç), dentro da variavel "dadosAmostraAtual"
+			* Isso vai adicionar cada amostra que extraimos do JSON dentro da Matrix "dadosAmostraAtual"
+			*/
+			dadosIniciais_tratados.push( dadosAmostraAtual );
+		}
+	
 
 	//Se for uma Matrix
 	}else if( dadosIniciais[0] instanceof Array ){
@@ -8978,6 +9037,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		case 'JSON_ARRAY':
 			context.keysIdentificadas = config.campos || Object.keys( map_keysIdentificadas );
 			context.nomesCampos       = config.campos || context.keysIdentificadas;
+			break;
+
+		case 'JSON_OF_ARRAY':
+			context.keysIdentificadas = config.campos || Object.keys( dadosIniciais );
+			context.nomesCampos       = config.campos || Object.keys( dadosIniciais );
 			break;
 	}
 
