@@ -1,4 +1,5 @@
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
+
 	let parametrosAdicionais = {
 		flexibilidade: config.flexibilidade || null
 	};
@@ -8,6 +9,63 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	let dadosIniciais_tratados  = [];
 
 	let tipoDadosIniciais       = undefined;
+
+	/**
+	* Callback que será usado para fazer tratamentos internos e verificações internas em cada amostra na hora de criar um DataStructure
+	* Uma das utilidades desta função será identificar a flexibilidade
+	*/
+	function callbackChecarAmostras( objAmostra )
+	{
+		/**
+		* @umavez
+		* SE OS NOMES DOS CAMPOS NÂO FOREM INFORMADOS
+		* Identifica os nomes dos campos que são usados no 'objAmostra'
+		*/
+		if( !config.campos )
+		{
+			//Se a amostra for um Array
+			if( objAmostra instanceof Array )
+			{
+				throw Error(`Impossivel determinar nomes dos campos em um array sem que eles sejam informados!. Atribua 'campos' ao seu config. `);
+
+			//Se a amostra for um JSON
+			}else if( !(objAmostra instanceof Array) && typeof objAmostra == 'object')
+			{
+				config.campos = Object.keys( objAmostra );
+			}	
+		}
+
+		/**
+		* @umavez
+		* Identifica a flexibilidade caso ela não tenha sido informada 
+		* Ele vai usar a primeira amostra que aparecer como base para identificar a flexibilidade
+		*/
+		if( !parametrosAdicionais.flexibilidade ) 
+		{
+			//Função que identifica qual é a flexibilidade de cada campo
+			function obterFlexibilidade(valor, indiceValor)
+			{
+				return typeof valor == 'number'  ? 'numero'   :
+					   typeof valor == 'string'  ? 'texto'    :
+					   typeof valor == 'boolean' ? 'booleano' :
+					  'texto'  
+			}
+
+			//Se a amostra for um Array
+			if( objAmostra instanceof Array )
+			{
+				parametrosAdicionais.flexibilidade = objAmostra.map(obterFlexibilidade);
+
+			//Se a amostra for um JSON
+			}else if( !(objAmostra instanceof Array) && typeof objAmostra == 'object')
+			{
+				parametrosAdicionais.flexibilidade = (config.campos).map(function(nomeCampo, indiceNomeCampo){
+																		return obterFlexibilidade( objAmostra[ nomeCampo ], indiceNomeCampo );
+																	});
+			}	
+			
+		}
+	}
 
 	//Tratar os dados iniciais
 	//Se for um array de JSON
@@ -21,6 +79,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			//Extrai as informações
 			const amostraJSON     = dadosIniciais[i];
 			const keysAmostra     = Object.keys(amostraJSON);
+
+			/**
+			* Faz uma verificação na amostra(se necessário)
+			*/
+			callbackChecarAmostras(amostraJSON);
 
 			//Vai salvando as chaves no mapa de chaves identificadas
 			keysAmostra.forEach(function(chave){
@@ -85,6 +148,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			});
 
 			/**
+			* Faz uma verificação na amostra(se necessário)
+			*/
+			callbackChecarAmostras(dadosAmostraAtual);
+
+			/**
 			* Adiciona os valores dessa amostra atual(ou seja, os valores dos campos da amostra atuaç), dentro da variavel "dadosAmostraAtual"
 			* Isso vai adicionar cada amostra que extraimos do JSON dentro da Matrix "dadosAmostraAtual"
 			*/
@@ -98,6 +166,21 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 		//Atribui os dados ao dadosIniciais_tratados
 		dadosIniciais_tratados = JSON.parse(JSON.stringify(dadosIniciais));
+
+		/**
+		* Se a flexibilidade não foi informada, ele vai percorrer cada amostra para procurar por isso e fazer outras verificações se necessário, assim como nas outras confições acima
+		*/
+		if( !parametrosAdicionais.flexibilidade )
+		{
+			dadosIniciais_tratados.forEach(function( amostra, indiceAmostra ){
+
+				/**
+				* Faz uma verificação na amostra(se necessário)
+				*/
+				callbackChecarAmostras( amostra );
+
+			});
+		}
 	}
 
     const context = Analise.Base(dadosIniciais_tratados, parametrosAdicionais);
