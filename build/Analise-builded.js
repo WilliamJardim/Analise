@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 28/1/2025 - 17:30:41*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 1/2/2025 - 21:29:29*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -668,6 +668,12 @@ window.Vectorization.Scalar = function( value=NaN, classConfig={} ){
 
     context.obterValor = function(){
         return context.value;
+    }
+
+    context.setValor = function(valorDefinir){
+        context.valor = valorDefinir;
+        context.value = valorDefinir;
+        context.conteudo = valorDefinir;
     }
 
     //Troca o número aleatorio dentro desse Vectorization.Scalar
@@ -11117,6 +11123,204 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		});
 
 		return acumulated;
+	}
+
+	/** Criação ou modificação de features */
+
+	/**
+	* Adiciona um tipo de padrão linear em um determinado campo de todas as amostras.
+	* Um padrão que tem um tipo de dependencia temporal, pois, os valores das amostras anteriores foram progredindo gradualmente até chegar no valor da amostra atual
+	*
+	* OBS: Ele não vai criar amostras. Em vez disso, ele vai ir percorrendo as amostras do DataStructure, e aplicando as mudanças nas colunas pra refletir esse padrão ao longo das amostras
+	*
+	* Você vai poder definir a partir de qual amostra, ele vai começar a subir, ou então, assumir uma subida constante que pode aumentar em intensidade conforme vai passando pelas amostras. Cada amostra pode ter um peso
+	*
+	* Ou também, podemos aplicar essa regra por critérios(usando funções) ou critérios internos.
+	* Como faixas de valores, e níveis de subida pra determinados ranges de valores da coluna da amostra 
+	*
+	* Deve ser um método bastante flexível, que pode ser usado inclusive pra reforçar/intensificar padrões já existentes noa dados, percorrendo as amostras, e acrescentando o padrão a coluna desejada. E claro, certas amostras podem não ser modificadas, enquanto outras podem receber a modificação, e o método pode criar padrões sequenciais(onde o valor atual depende do valor anterior), dependendo do tipo de padrão usado, e das configurações e condições 
+	*
+	* Podemos ter critérios que determinam quando o valor deve começar a subir .. quando deve começar descer, e como deve começar a descer ou subir. Cada detalhezinho pode ser controlado
+	*/
+	context.AddLinearStandart = function( campo=null, detalhes={} ){
+		if(!campo){
+			throw Error('Voce precisa dizer qual é o campo que voce deseja aplicar o padrão!');
+		}
+
+		const detalhesPadrao = {
+
+			//Delimita a partir de qual amostra o padrão vai começar a ser aplicado
+			range: {
+				startIndex: detalhes.range.startIndex || 0,
+				endIndex: null
+			},
+
+			//Configura a direção do padrão, se vai subir ou descer, ou ambos, ou se manter,.. e em quais condições
+			sense: {
+
+				/**
+				* Quais direções eu quero: subir, descer, ou ambas 
+				*/
+				direction: detalhes.sense.direction || ('subindo' || 'descendo' || 'ambos'),
+				
+				/**
+				* Uma função que vai dizer quando o valor atual deve se manter estagnado 
+				*/
+				stayCondition: detalhes.sense.stayCondition, //Funcao
+
+				/**
+				* Uma função que vai dizer quando o valor atual deve subir
+				*/
+				upCondition: detalhes.sense.upCondition, //Funcao
+
+				/**
+				* Uma função que vai dizer quando o valor atual deve descer
+				*/
+				downCondition: detalhes.sense.downCondition //Funcao
+			},
+
+			//Configura a força, ou seja, a força dos passos
+			steps: {
+				
+				/**
+				* Controla se vai somar ou apenas definir o valor atual nas amostras 
+				*/
+				insertionType:   detalhes.steps.insertionType || 'sum',
+
+				/**
+				* Se o incremento vai ser sempre linear ou não
+				*/
+				linearIncrement: detalhes.steps.linearIncrement ? true : false,
+
+				/**
+				* Se vai ter ruidos aleatorios nos passos do valor atual
+				*/
+				randomNoises:    detalhes.steps.randomNoises || false, //JSON ou falso
+
+				/**
+				* Se vai ter ruidos customizados nos passos do valor atual
+				*/
+				customNoises:    detalhes.steps.customNoises || false, //Funcao ou falso
+
+				/**
+				* Valor inicial do "valor atual"
+				*/
+				initialValue:    detalhes.steps.initialValue || 0,
+
+				/**
+				* Função que controla o valor do passo do "valor atual" quando ele estiver subindo
+				*/
+				stepUp: detalhes.steps.stepUp || 0.1, //Funcao ou valor
+
+				/**
+				* Função que controla o valor do passo do "valor atual" quando ele estiver descendo
+				*/
+				stepDown: detalhes.steps.stepDown || 0.1, //Funcao ou valor
+			}
+			
+
+		}
+ 
+		//Para cada amostra
+		let valorAtual = detalhesPadrao.steps.initialValue;
+
+		for( let numeroAmostra = detalhesPadrao.range.startIndex; 
+			 numeroAmostra < context.linhas; 
+			 numeroAmostra++ 
+		){
+
+			/**
+			* Insere o valor atual na amostra atual somando ou substituindo
+			*/
+			const valorCampoAmostra = context.content[ numeroAmostra ].getCampo( campo )
+																	  .raw();
+
+			(context.content[ numeroAmostra ])
+			.getCampo( campo )
+			.setValor( 
+				
+				/* Se for somar por cima do valor que já existe */
+				(detalhesPadrao.steps.insertionType == 'sum') 
+				? valorCampoAmostra + valorAtual 
+				:
+
+				/* Se for substituir/trocar o valor */
+				(detalhesPadrao.steps.insertionType == 'set')
+				? valorAtual 
+				: 0
+
+			);
+
+			/**
+			* Modifica o valor atual:
+			* Isso é feito para que, na próxima vez que a linha anterior for executada, na hora de definir o valor da proxima amostra, ele vai ser uma sequencia do anterior.
+			*/
+
+			//Parametros que serão passados para cada callback
+			const parametrosCallbacks = {
+				indiceAmostra: numeroAmostra,
+				amostra: context.content[ numeroAmostra ],
+				campo: campo,
+				valor: valorCampoAmostra
+			}
+		
+			//Se nao for ficar parado(sem incrementar ou decrementar). OU SEJA SE NÂO ESTIVER EM MODO DE MANTER
+			if( detalhesPadrao.sense.stayCondition(parametrosCallbacks) == false || detalhesPadrao.sense.stayCondition == undefined )
+			{
+				/**
+				* Se estiver descendo o valor
+				*/
+				if(  ( 
+					  //Se eu permito essa direção no config do padrão
+					  !detalhesPadrao.direction || 
+					   detalhesPadrao.direction == 'down' || 
+					   detalhesPadrao.direction == 'both'
+					 ) 
+					 && 
+					 //Se eu defini uma condição de descida de valor
+					 detalhesPadrao.sense.downCondition && detalhesPadrao.sense.downCondition(parametrosCallbacks) == true 
+				){
+					valorAtual -= (
+									typeof detalhesPadrao.steps.stepDown == 'function' 
+									? detalhesPadrao.steps.stepDown(parametrosCallbacks) 
+									: 
+									typeof detalhesPadrao.steps.stepDown == 'number' 
+									? detalhesPadrao.steps.stepDown 
+									: 0
+								);
+				}
+
+				/**
+				* Se estiver subindo o valor
+				*/
+				if(
+					( 
+					  //Se eu permito essa direção no config do padrão
+					  !detalhesPadrao.direction || 
+					  detalhesPadrao.direction == 'up' || 
+					  detalhesPadrao.direction == 'both'
+					) 
+					&&  
+					//Se eu defini uma condição de subida de valor
+					detalhesPadrao.sense.upCondition && detalhesPadrao.sense.upCondition(parametrosCallbacks) == true 
+				){
+					valorAtual += (
+								typeof detalhesPadrao.steps.stepUp == 'function' 
+								? detalhesPadrao.steps.stepUp(parametrosCallbacks) 
+								: 
+								typeof detalhesPadrao.steps.stepUp == 'number' 
+								? detalhesPadrao.steps.stepUp 
+								: 0
+								);
+
+				}
+
+			//Se estiver mantendo, o valor se mantem
+			}else{
+				valorAtual = valorAtual;
+			}
+
+		}
 	}
 
     return context;
