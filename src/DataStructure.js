@@ -2329,11 +2329,35 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		){
 
 			/**
-			* Insere o valor atual na amostra atual somando ou substituindo
+			* Obtem o valor atual na amostra atual 
 			*/
 			const valorCampoAmostra = context.content[ numeroAmostra ].getCampo( campo )
 																	  .raw();
 
+			/**
+			* Parametros que serão passados para cada callback
+			*/
+			const parametrosCallbacks = {
+				//Contexto
+				time: new Date().getTime(),
+				datastructure: context,
+				detalhesPadrao: detalhesPadrao,
+
+				//Amostra
+				indiceAmostra: numeroAmostra,
+				amostra: context.content[ numeroAmostra ],
+				campo: campo,
+				valor: valorCampoAmostra
+			}
+
+			//Antes do passo
+			if( detalhesPadrao.beforeStep && typeof detalhesPadrao.beforeStep == 'function'){
+				detalhesPadrao.beforeStep.bind(parametrosCallbacks)(parametrosCallbacks);
+			}
+
+			/**
+			* Insere o valor atual na amostra atual somando ou substituindo
+			*/
 			(context.content[ numeroAmostra ])
 			.getCampo( campo )
 			.setValor( 
@@ -2354,14 +2378,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			* Modifica o valor atual:
 			* Isso é feito para que, na próxima vez que a linha anterior for executada, na hora de definir o valor da proxima amostra, ele vai ser uma sequencia do anterior.
 			*/
-
-			//Parametros que serão passados para cada callback
-			const parametrosCallbacks = {
-				indiceAmostra: numeroAmostra,
-				amostra: context.content[ numeroAmostra ],
-				campo: campo,
-				valor: valorCampoAmostra
-			}
 		
 			//Se nao for ficar parado(sem incrementar ou decrementar). OU SEJA SE NÂO ESTIVER EM MODO DE MANTER
 			if( detalhesPadrao.sense.stayCondition(parametrosCallbacks) == false || detalhesPadrao.sense.stayCondition == undefined )
@@ -2426,6 +2442,11 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			//Se estiver mantendo, o valor se mantem
 			}else{
 				valorAtual = valorAtual;
+			}
+
+			//Depois do passo
+			if( detalhesPadrao.afterStep && typeof detalhesPadrao.afterStep == 'function'){
+				detalhesPadrao.afterStep.bind(parametrosCallbacks)(parametrosCallbacks);
 			}
 
 		}
