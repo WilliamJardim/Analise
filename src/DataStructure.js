@@ -2295,6 +2295,26 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				* Função que controla o valor do passo do "valor atual" quando ele estiver descendo
 				*/
 				stepDown: detalhes.steps.stepDown || 0.1, //Funcao ou valor
+
+				/**
+				* Um valor que controla a taxa dos passos.
+				* valores altos vão fazer passos bem longos,
+				* e valores pequenos tipo 0.2 podem reduzir a intensidade dos passos, globalmente, tanto pra subida quanto pra descida 
+				* 1 é neutro, ele dá passos conforme programado, sem afetar.
+				*/
+				stepRate: 1,
+
+				/**
+				* Um valor que controla a taxa dos passos.
+				* Só se aplica na subida do valor
+				*/
+				stepUpRate: 1,
+
+				/**
+				* Um valor que controla a taxa dos passos.
+				* Só se aplica na descida do valor
+				*/
+				stepDownRate: 1
 			}
 			
 
@@ -2366,7 +2386,9 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 										typeof detalhesPadrao.steps.stepDown == 'number' 
 										? detalhesPadrao.steps.stepDown 
 										: 0
-									  );
+
+									  //Multiplica por um parametro chamado "stepRate" pra oferecer melhor controle de passos
+									  ) * (detalhesPadrao.steps.stepRate || 1) * (detalhesPadrao.steps.stepDownRate || 1);
 
 					valorAtual -= valorDown;
 
@@ -2393,7 +2415,9 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 								typeof detalhesPadrao.steps.stepUp == 'number' 
 								? detalhesPadrao.steps.stepUp 
 								: 0
-								);
+
+								//Multiplica por um parametro chamado "stepRate" pra oferecer melhor controle de passos
+								) * (detalhesPadrao.steps.stepRate || 1) * (detalhesPadrao.steps.stepUpRate || 1);
 
 					valorAtual += valorUp;
 
