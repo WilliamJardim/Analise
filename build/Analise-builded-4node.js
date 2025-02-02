@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 2/2/2025 - 10:12:36*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 2/2/2025 - 10:29:56*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -11157,6 +11157,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Deve ser um método bastante flexível, que pode ser usado inclusive pra reforçar/intensificar padrões já existentes noa dados, percorrendo as amostras, e acrescentando o padrão a coluna desejada. E claro, certas amostras podem não ser modificadas, enquanto outras podem receber a modificação, e o método pode criar padrões sequenciais(onde o valor atual depende do valor anterior), dependendo do tipo de padrão usado, e das configurações e condições 
 	*
 	* Podemos ter critérios que determinam quando o valor deve começar a subir .. quando deve começar descer, e como deve começar a descer ou subir. Cada detalhezinho pode ser controlado
+	*
+	* @example
+	* Exemplo de uso:
+	*
+	*   dataset.AddLinearStandart('idade', Analise.LinearStandarts.AlwaysUp({}) );
+	*
 	*/
 	context.AddLinearStandart = function( campo=null, detalhes={} ){
 		if(!campo){
@@ -11379,7 +11385,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			*/
 		
 			//Se nao for ficar parado(sem incrementar ou decrementar). OU SEJA SE NÂO ESTIVER EM MODO DE MANTER
-			if( detalhesPadrao.sense.stayCondition(parametrosCallbacks) == false || detalhesPadrao.sense.stayCondition == undefined )
+			if( (detalhesPadrao.sense || {}).stayCondition == undefined || (detalhesPadrao.sense || {}).stayCondition(parametrosCallbacks) == false )
 			{
 				/**
 				* Se estiver descendo o valor
@@ -11465,15 +11471,19 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 *
 * Descrição: Implementa alguns padrões lineares para serem usados no método "AddLinearStandart" do DataStructure.
 */
-(Analise.DataStructure.AddLinearStandart).standarts = {};
+Analise.DataStructure.LinearStandarts = {};
 
 /**
 * @padrao AlwaysUp
 * Usado para criar um incremento que é sempre positivo.
 * Esse padrão vai sempre subir o "valor atual" do campo, até que chegue na última amostra(ou na amostra definida pelo usuario em range.endIndex), quando a função para de inserir o padrão
+*
+* @example
+* Exemplo de uso:
+*
+*   dataset.AddLinearStandart('idade', Analise.LinearStandarts.AlwaysUp({}) );
 */
-(Analise.DataStructure.AddLinearStandart)
-.standarts.AlwaysUp = function( detalhes={} ){
+Analise.DataStructure.LinearStandarts.AlwaysUp = function( detalhes={} ){
 
     const detalhesPadrao = {
         name: 'AlwaysUp',
@@ -11488,32 +11498,32 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
             /**
             * Controla se vai somar ou apenas definir o valor atual nas amostras 
             */
-            insertionType: detalhes.sense.insertionType || 'sum',
+            insertionType: (detalhes.sense || {}).insertionType || 'sum',
 
             /**
             * Se vai ter ruidos aleatorios nos passos do valor atual
             */
-            randomNoises:  detalhes.steps.randomNoises || false, //JSON ou falso
+            randomNoises:  (detalhes.steps || {}).randomNoises || false, //JSON ou falso
 
             /**
             * Se vai ter ruidos customizados nos passos do valor atual
             */
-            customNoises:  detalhes.steps.customNoises || false, //Funcao ou falso
+            customNoises:  (detalhes.steps || {}).customNoises || false, //Funcao ou falso
 
             /**
             * Valor inicial do "valor atual"
             */
-            initialValue:  detalhes.steps.initialValue || 0,
+            initialValue:  (detalhes.steps || {}).initialValue || 0,
 
             /**
             * Função que controla o valor do passo do "valor atual" quando ele estiver subindo
             */
-            stepUp:   detalhes.steps.stepUp || 0.1, //Funcao ou valor
+            stepUp:   (detalhes.steps || {}).stepUp || 0.1, //Funcao ou valor
 
             /**
             * Função que controla o valor do passo do "valor atual" quando ele estiver descendo
             */
-            stepDown: detalhes.steps.stepDown || 0.1, //Funcao ou valor,
+            stepDown: (detalhes.steps || {}).stepDown || 0.1, //Funcao ou valor,
 
             /**
             * Um valor que controla a taxa dos passos.
@@ -11538,12 +11548,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
             /**
             * Callback que vai rodar antes de cada passo do "valor atual"
             */
-            beforeStep: detalhes.steps.beforeStep,
+            beforeStep: (detalhes.steps || {}).beforeStep,
 
             /**
             * Callback que vai rodar depois de cada passo do "valor atual"
             */
-            afterStep:  detalhes.steps.afterStep
+            afterStep:  (detalhes.steps || {}).afterStep
 
         },
 
@@ -11576,8 +11586,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 }
 
-//Atalho
-Analise.LinearStandarts = (Analise.DataStructure.AddLinearStandart).standarts;
+Analise.LinearStandarts = Analise.DataStructure.LinearStandarts;
 /* FIM DO ARQUIVO: ../src/DefaultLinearStandarts.js*/
 /* ARQUIVO: ../examples/browser/index.js*/
 //var dataset = Analise.DataStructure( datasetExemplo );
