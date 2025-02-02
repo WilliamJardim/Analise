@@ -2272,11 +2272,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				insertionType:   detalhes.steps.insertionType || 'sum',
 
 				/**
-				* Se o incremento vai ser sempre linear ou não
-				*/
-				linearIncrement: detalhes.steps.linearIncrement ? true : false,
-
-				/**
 				* Se vai ter ruidos aleatorios nos passos do valor atual
 				*/
 				randomNoises:    detalhes.steps.randomNoises || false, //JSON ou falso
@@ -2364,14 +2359,17 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 					 //Se eu defini uma condição de descida de valor
 					 detalhesPadrao.sense.downCondition && detalhesPadrao.sense.downCondition(parametrosCallbacks) == true 
 				){
-					valorAtual -= (
-									typeof detalhesPadrao.steps.stepDown == 'function' 
-									? detalhesPadrao.steps.stepDown(parametrosCallbacks) 
-									: 
-									typeof detalhesPadrao.steps.stepDown == 'number' 
-									? detalhesPadrao.steps.stepDown 
-									: 0
-								);
+					const valorDown = (
+										typeof detalhesPadrao.steps.stepDown == 'function' 
+										? detalhesPadrao.steps.stepDown(parametrosCallbacks) 
+										: 
+										typeof detalhesPadrao.steps.stepDown == 'number' 
+										? detalhesPadrao.steps.stepDown 
+										: 0
+									  );
+
+					valorAtual -= valorDown;
+
 				}
 
 				/**
@@ -2388,7 +2386,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 					//Se eu defini uma condição de subida de valor
 					detalhesPadrao.sense.upCondition && detalhesPadrao.sense.upCondition(parametrosCallbacks) == true 
 				){
-					valorAtual += (
+					const valorUp = (
 								typeof detalhesPadrao.steps.stepUp == 'function' 
 								? detalhesPadrao.steps.stepUp(parametrosCallbacks) 
 								: 
@@ -2396,6 +2394,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 								? detalhesPadrao.steps.stepUp 
 								: 0
 								);
+
+					valorAtual += valorUp;
 
 				}
 
