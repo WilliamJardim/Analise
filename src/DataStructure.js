@@ -1,3 +1,11 @@
+/**
+* Author Name: William Alves Jardim
+* Author Email: williamalvesjardim@gmail.com
+* 
+* LICENSE: MIT
+*
+* File Name: DataStructure.js
+*/
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	let parametrosAdicionais = {
@@ -2225,6 +2233,12 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	* Deve ser um método bastante flexível, que pode ser usado inclusive pra reforçar/intensificar padrões já existentes noa dados, percorrendo as amostras, e acrescentando o padrão a coluna desejada. E claro, certas amostras podem não ser modificadas, enquanto outras podem receber a modificação, e o método pode criar padrões sequenciais(onde o valor atual depende do valor anterior), dependendo do tipo de padrão usado, e das configurações e condições 
 	*
 	* Podemos ter critérios que determinam quando o valor deve começar a subir .. quando deve começar descer, e como deve começar a descer ou subir. Cada detalhezinho pode ser controlado
+	*
+	* @example
+	* Exemplo de uso:
+	*
+	*   dataset.AddLinearStandart('idade', Analise.LinearStandarts.AlwaysUp({}) );
+	*
 	*/
 	context.AddLinearStandart = function( campo=null, detalhes={} ){
 		if(!campo){
@@ -2381,7 +2395,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		let valorAtual = detalhesPadrao.steps.initialValue;
 
 		for( let numeroAmostra = detalhesPadrao.range.startIndex; 
-			 numeroAmostra < context.linhas; 
+			 numeroAmostra < ( detalhesPadrao.range.endIndex == null ? context.linhas : detalhesPadrao.range.endIndex); 
 			 numeroAmostra++ 
 		){
 
@@ -2447,7 +2461,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			*/
 		
 			//Se nao for ficar parado(sem incrementar ou decrementar). OU SEJA SE NÂO ESTIVER EM MODO DE MANTER
-			if( detalhesPadrao.sense.stayCondition(parametrosCallbacks) == false || detalhesPadrao.sense.stayCondition == undefined )
+			if( (detalhesPadrao.sense || {}).stayCondition == undefined || (detalhesPadrao.sense || {}).stayCondition(parametrosCallbacks) == false )
 			{
 				/**
 				* Se estiver descendo o valor

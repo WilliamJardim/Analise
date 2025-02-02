@@ -1,3 +1,11 @@
+/**
+* Author Name: William Alves Jardim
+* Author Email: williamalvesjardim@gmail.com
+* 
+* LICENSE: MIT
+*
+* File Name: Base.js
+*/
 Analise = {};
 
 //Constantes

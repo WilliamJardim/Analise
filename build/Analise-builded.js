@@ -6,7 +6,7 @@
  * LICENSE: MIT
 */
 
-/* COMPILADO: 1/2/2025 - 21:29:29*//* ARQUIVO: ../libs/Vectorization-builded.js*/
+/* COMPILADO: 2/2/2025 - 10:12:36*//* ARQUIVO: ../libs/Vectorization-builded.js*/
 
 /*
  * Author Name: William Alves Jardim
@@ -8852,6 +8852,14 @@ window.isbrowser = true;
 window.iscompilation = true
 /* FIM DO ARQUIVO: ../libs/Vectorization-builded.js*/
 /* ARQUIVO: ../src/Base.js*/
+/**
+* Author Name: William Alves Jardim
+* Author Email: williamalvesjardim@gmail.com
+* 
+* LICENSE: MIT
+*
+* File Name: Base.js
+*/
 Analise = {};
 
 //Constantes
@@ -8914,6 +8922,14 @@ Analise.Base = function( config, parametrosAdicionais={} ){
 window.A = window.Analise;
 /* FIM DO ARQUIVO: ../src/Base.js*/
 /* ARQUIVO: ../src/DataStructure.js*/
+/**
+* Author Name: William Alves Jardim
+* Author Email: williamalvesjardim@gmail.com
+* 
+* LICENSE: MIT
+*
+* File Name: DataStructure.js
+*/
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	let parametrosAdicionais = {
@@ -11155,6 +11171,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				endIndex: null
 			},
 
+			getRange: function(){
+				return this.range;
+			},
+
 			//Configura a direção do padrão, se vai subir ou descer, ou ambos, ou se manter,.. e em quais condições
 			sense: {
 
@@ -11163,20 +11183,60 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				*/
 				direction: detalhes.sense.direction || ('subindo' || 'descendo' || 'ambos'),
 				
+					//Metodos dele
+					getDirection: function(){
+						return this.direction;
+					},
+
+					setDirection: function( direcao ){
+						this.direction = direcao;
+					},
+
 				/**
 				* Uma função que vai dizer quando o valor atual deve se manter estagnado 
 				*/
 				stayCondition: detalhes.sense.stayCondition, //Funcao
+
+					//Metodos dele
+					getStayCondition: function(){
+						return this.stayCondition;
+					},
+
+					setStayCondition: function( condicao ){
+						this.stayCondition = condicao;
+					},
 
 				/**
 				* Uma função que vai dizer quando o valor atual deve subir
 				*/
 				upCondition: detalhes.sense.upCondition, //Funcao
 
+					//Metodos dele
+					getUpCondition: function(){
+						return this.upCondition;
+					},
+
+					setUpCondition: function( condicao ){
+						this.upCondition = condicao;
+					},
+
 				/**
 				* Uma função que vai dizer quando o valor atual deve descer
 				*/
-				downCondition: detalhes.sense.downCondition //Funcao
+				downCondition: detalhes.sense.downCondition, //Funcao
+
+					//Metodos dele
+					getDownCondition: function(){
+						return this.downCondition;
+					},
+
+					setDownCondition: function( condicao ){
+						this.downCondition = condicao;
+					},
+			},
+
+			getSense: function(){
+				return this.sense;
 			},
 
 			//Configura a força, ou seja, a força dos passos
@@ -11186,11 +11246,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				* Controla se vai somar ou apenas definir o valor atual nas amostras 
 				*/
 				insertionType:   detalhes.steps.insertionType || 'sum',
-
-				/**
-				* Se o incremento vai ser sempre linear ou não
-				*/
-				linearIncrement: detalhes.steps.linearIncrement ? true : false,
 
 				/**
 				* Se vai ter ruidos aleatorios nos passos do valor atual
@@ -11216,8 +11271,41 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				* Função que controla o valor do passo do "valor atual" quando ele estiver descendo
 				*/
 				stepDown: detalhes.steps.stepDown || 0.1, //Funcao ou valor
+
+				/**
+				* Um valor que controla a taxa dos passos.
+				* valores altos vão fazer passos bem longos,
+				* e valores pequenos tipo 0.2 podem reduzir a intensidade dos passos, globalmente, tanto pra subida quanto pra descida 
+				* 1 é neutro, ele dá passos conforme programado, sem afetar.
+				*/
+				stepRate: 1,
+
+				/**
+				* Um valor que controla a taxa dos passos.
+				* Só se aplica na subida do valor
+				*/
+				stepUpRate: 1,
+
+				/**
+				* Um valor que controla a taxa dos passos.
+				* Só se aplica na descida do valor
+				*/
+				stepDownRate: 1,
+
+				/**
+				* Callback que vai rodar antes de cada passo do "valor atual"
+				*/
+				beforeStep: detalhes.steps.beforeStep,
+
+				/**
+				* Callback que vai rodar depois de cada passo do "valor atual"
+				*/
+				afterStep: detalhes.steps.afterStep,
+			},
+
+			getSteps: function(){
+				return this.steps;
 			}
-			
 
 		}
  
@@ -11225,16 +11313,50 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		let valorAtual = detalhesPadrao.steps.initialValue;
 
 		for( let numeroAmostra = detalhesPadrao.range.startIndex; 
-			 numeroAmostra < context.linhas; 
+			 numeroAmostra < ( detalhesPadrao.range.endIndex == null ? context.linhas : detalhesPadrao.range.endIndex); 
 			 numeroAmostra++ 
 		){
 
 			/**
-			* Insere o valor atual na amostra atual somando ou substituindo
+			* Obtem o valor atual na amostra atual 
 			*/
 			const valorCampoAmostra = context.content[ numeroAmostra ].getCampo( campo )
 																	  .raw();
 
+			/**
+			* Parametros que serão passados para cada callback
+			*/
+			const parametrosCallbacks = {
+				//Contexto
+				time: new Date().getTime(),
+				datastructure: context,
+				detalhesPadrao: detalhesPadrao,
+
+				/** Obtem a configuração do padrão atual pra permitir modificar */
+				getPadrao: function(){
+					return detalhesPadrao;
+				},
+
+				/** Obtem o DataStructure */
+				getDataStructure: function(){
+					return context;
+				},
+
+				//Amostra
+				indiceAmostra: numeroAmostra,
+				amostra: context.content[ numeroAmostra ],
+				campo: campo,
+				valor: valorCampoAmostra
+			}
+
+			//Antes do passo
+			if( detalhesPadrao.steps.beforeStep && typeof detalhesPadrao.steps.beforeStep == 'function'){
+				detalhesPadrao.steps.beforeStep.bind(parametrosCallbacks)(parametrosCallbacks);
+			}
+
+			/**
+			* Insere o valor atual na amostra atual somando ou substituindo
+			*/
 			(context.content[ numeroAmostra ])
 			.getCampo( campo )
 			.setValor( 
@@ -11255,14 +11377,6 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			* Modifica o valor atual:
 			* Isso é feito para que, na próxima vez que a linha anterior for executada, na hora de definir o valor da proxima amostra, ele vai ser uma sequencia do anterior.
 			*/
-
-			//Parametros que serão passados para cada callback
-			const parametrosCallbacks = {
-				indiceAmostra: numeroAmostra,
-				amostra: context.content[ numeroAmostra ],
-				campo: campo,
-				valor: valorCampoAmostra
-			}
 		
 			//Se nao for ficar parado(sem incrementar ou decrementar). OU SEJA SE NÂO ESTIVER EM MODO DE MANTER
 			if( detalhesPadrao.sense.stayCondition(parametrosCallbacks) == false || detalhesPadrao.sense.stayCondition == undefined )
@@ -11280,14 +11394,19 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 					 //Se eu defini uma condição de descida de valor
 					 detalhesPadrao.sense.downCondition && detalhesPadrao.sense.downCondition(parametrosCallbacks) == true 
 				){
-					valorAtual -= (
-									typeof detalhesPadrao.steps.stepDown == 'function' 
-									? detalhesPadrao.steps.stepDown(parametrosCallbacks) 
-									: 
-									typeof detalhesPadrao.steps.stepDown == 'number' 
-									? detalhesPadrao.steps.stepDown 
-									: 0
-								);
+					const valorDown = (
+										typeof detalhesPadrao.steps.stepDown == 'function' 
+										? detalhesPadrao.steps.stepDown(parametrosCallbacks) 
+										: 
+										typeof detalhesPadrao.steps.stepDown == 'number' 
+										? detalhesPadrao.steps.stepDown 
+										: 0
+
+									  //Multiplica por um parametro chamado "stepRate" pra oferecer melhor controle de passos
+									  ) * (detalhesPadrao.steps.stepRate || 1) * (detalhesPadrao.steps.stepDownRate || 1);
+
+					valorAtual -= valorDown;
+
 				}
 
 				/**
@@ -11304,14 +11423,18 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 					//Se eu defini uma condição de subida de valor
 					detalhesPadrao.sense.upCondition && detalhesPadrao.sense.upCondition(parametrosCallbacks) == true 
 				){
-					valorAtual += (
+					const valorUp = (
 								typeof detalhesPadrao.steps.stepUp == 'function' 
 								? detalhesPadrao.steps.stepUp(parametrosCallbacks) 
 								: 
 								typeof detalhesPadrao.steps.stepUp == 'number' 
 								? detalhesPadrao.steps.stepUp 
 								: 0
-								);
+
+								//Multiplica por um parametro chamado "stepRate" pra oferecer melhor controle de passos
+								) * (detalhesPadrao.steps.stepRate || 1) * (detalhesPadrao.steps.stepUpRate || 1);
+
+					valorAtual += valorUp;
 
 				}
 
@@ -11320,12 +11443,142 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				valorAtual = valorAtual;
 			}
 
+			//Depois do passo
+			if( detalhesPadrao.steps.afterStep && typeof detalhesPadrao.steps.afterStep == 'function'){
+				detalhesPadrao.steps.afterStep.bind(parametrosCallbacks)(parametrosCallbacks);
+			}
+
 		}
 	}
 
     return context;
 }
 /* FIM DO ARQUIVO: ../src/DataStructure.js*/
+/* ARQUIVO: ../src/DefaultLinearStandarts.js*/
+/**
+* Author Name: William Alves Jardim
+* Author Email: williamalvesjardim@gmail.com
+* 
+* LICENSE: MIT
+*
+* File Name: DefaultLinearStandarts.js
+*
+* Descrição: Implementa alguns padrões lineares para serem usados no método "AddLinearStandart" do DataStructure.
+*/
+(Analise.DataStructure.AddLinearStandart).standarts = {};
+
+/**
+* @padrao AlwaysUp
+* Usado para criar um incremento que é sempre positivo.
+* Esse padrão vai sempre subir o "valor atual" do campo, até que chegue na última amostra(ou na amostra definida pelo usuario em range.endIndex), quando a função para de inserir o padrão
+*/
+(Analise.DataStructure.AddLinearStandart)
+.standarts.AlwaysUp = function( detalhes={} ){
+
+    const detalhesPadrao = {
+        name: 'AlwaysUp',
+
+        /** Configurações do padrão **/
+        range: detalhes.range || { startIndex: 0, endIndex: null },
+
+        /**
+        * Configura os passos como quiser
+        */
+        steps: {
+            /**
+            * Controla se vai somar ou apenas definir o valor atual nas amostras 
+            */
+            insertionType: detalhes.sense.insertionType || 'sum',
+
+            /**
+            * Se vai ter ruidos aleatorios nos passos do valor atual
+            */
+            randomNoises:  detalhes.steps.randomNoises || false, //JSON ou falso
+
+            /**
+            * Se vai ter ruidos customizados nos passos do valor atual
+            */
+            customNoises:  detalhes.steps.customNoises || false, //Funcao ou falso
+
+            /**
+            * Valor inicial do "valor atual"
+            */
+            initialValue:  detalhes.steps.initialValue || 0,
+
+            /**
+            * Função que controla o valor do passo do "valor atual" quando ele estiver subindo
+            */
+            stepUp:   detalhes.steps.stepUp || 0.1, //Funcao ou valor
+
+            /**
+            * Função que controla o valor do passo do "valor atual" quando ele estiver descendo
+            */
+            stepDown: detalhes.steps.stepDown || 0.1, //Funcao ou valor,
+
+            /**
+            * Um valor que controla a taxa dos passos.
+            * valores altos vão fazer passos bem longos,
+            * e valores pequenos tipo 0.2 podem reduzir a intensidade dos passos, globalmente, tanto pra subida quanto pra descida 
+            * 1 é neutro, ele dá passos conforme programado, sem afetar.
+            */
+            stepRate: 1,
+
+            /**
+            * Um valor que controla a taxa dos passos.
+            * Só se aplica na subida do valor
+            */
+            stepUpRate: 1,
+
+            /**
+            * Um valor que controla a taxa dos passos.
+            * Só se aplica na descida do valor
+            */
+            stepDownRate: 1,
+
+            /**
+            * Callback que vai rodar antes de cada passo do "valor atual"
+            */
+            beforeStep: detalhes.steps.beforeStep,
+
+            /**
+            * Callback que vai rodar depois de cada passo do "valor atual"
+            */
+            afterStep:  detalhes.steps.afterStep
+
+        },
+
+        /**
+        * Sentido do padrão 
+        */
+        sense: {
+            /**
+            * Vai sempre subir o "valor atual" 
+            */
+            direction: 'up',
+
+            /**
+            * Não existe condição para se manter  
+            */
+            stayCondition: undefined,
+
+            /**
+            * Define a codição de subida 
+            */
+			upCondition: function( parametros ){
+                return true; // Vai sempre subir
+            }
+
+        }
+
+    };
+
+    return detalhesPadrao;
+
+}
+
+//Atalho
+Analise.LinearStandarts = (Analise.DataStructure.AddLinearStandart).standarts;
+/* FIM DO ARQUIVO: ../src/DefaultLinearStandarts.js*/
 /* ARQUIVO: ../examples/browser/index.js*/
 //var dataset = Analise.DataStructure( datasetExemplo );
 /*
