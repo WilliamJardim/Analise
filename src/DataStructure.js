@@ -2239,6 +2239,10 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				endIndex: null
 			},
 
+			getRange: function(){
+				return this.range;
+			},
+
 			//Configura a direção do padrão, se vai subir ou descer, ou ambos, ou se manter,.. e em quais condições
 			sense: {
 
@@ -2247,20 +2251,60 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				*/
 				direction: detalhes.sense.direction || ('subindo' || 'descendo' || 'ambos'),
 				
+					//Metodos dele
+					getDirection: function(){
+						return this.direction;
+					},
+
+					setDirection: function( direcao ){
+						this.direction = direcao;
+					},
+
 				/**
 				* Uma função que vai dizer quando o valor atual deve se manter estagnado 
 				*/
 				stayCondition: detalhes.sense.stayCondition, //Funcao
+
+					//Metodos dele
+					getStayCondition: function(){
+						return this.stayCondition;
+					},
+
+					setStayCondition: function( condicao ){
+						this.stayCondition = condicao;
+					},
 
 				/**
 				* Uma função que vai dizer quando o valor atual deve subir
 				*/
 				upCondition: detalhes.sense.upCondition, //Funcao
 
+					//Metodos dele
+					getUpCondition: function(){
+						return this.upCondition;
+					},
+
+					setUpCondition: function( condicao ){
+						this.upCondition = condicao;
+					},
+
 				/**
 				* Uma função que vai dizer quando o valor atual deve descer
 				*/
-				downCondition: detalhes.sense.downCondition //Funcao
+				downCondition: detalhes.sense.downCondition, //Funcao
+
+					//Metodos dele
+					getDownCondition: function(){
+						return this.downCondition;
+					},
+
+					setDownCondition: function( condicao ){
+						this.downCondition = condicao;
+					},
+			},
+
+			getSense: function(){
+				return this.sense;
 			},
 
 			//Configura a força, ou seja, a força dos passos
@@ -2314,9 +2358,22 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				* Um valor que controla a taxa dos passos.
 				* Só se aplica na descida do valor
 				*/
-				stepDownRate: 1
+				stepDownRate: 1,
+
+				/**
+				* Callback que vai rodar antes de cada passo do "valor atual"
+				*/
+				beforeStep: detalhes.steps.beforeStep,
+
+				/**
+				* Callback que vai rodar depois de cada passo do "valor atual"
+				*/
+				afterStep: detalhes.steps.afterStep,
+			},
+
+			getSteps: function(){
+				return this.steps;
 			}
-			
 
 		}
  
@@ -2343,6 +2400,16 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 				datastructure: context,
 				detalhesPadrao: detalhesPadrao,
 
+				/** Obtem a configuração do padrão atual pra permitir modificar */
+				getPadrao: function(){
+					return detalhesPadrao;
+				},
+
+				/** Obtem o DataStructure */
+				getDataStructure: function(){
+					return context;
+				},
+
 				//Amostra
 				indiceAmostra: numeroAmostra,
 				amostra: context.content[ numeroAmostra ],
@@ -2351,8 +2418,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			}
 
 			//Antes do passo
-			if( detalhesPadrao.beforeStep && typeof detalhesPadrao.beforeStep == 'function'){
-				detalhesPadrao.beforeStep.bind(parametrosCallbacks)(parametrosCallbacks);
+			if( detalhesPadrao.steps.beforeStep && typeof detalhesPadrao.steps.beforeStep == 'function'){
+				detalhesPadrao.steps.beforeStep.bind(parametrosCallbacks)(parametrosCallbacks);
 			}
 
 			/**
@@ -2445,8 +2512,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			}
 
 			//Depois do passo
-			if( detalhesPadrao.afterStep && typeof detalhesPadrao.afterStep == 'function'){
-				detalhesPadrao.afterStep.bind(parametrosCallbacks)(parametrosCallbacks);
+			if( detalhesPadrao.steps.afterStep && typeof detalhesPadrao.steps.afterStep == 'function'){
+				detalhesPadrao.steps.afterStep.bind(parametrosCallbacks)(parametrosCallbacks);
 			}
 
 		}
