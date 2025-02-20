@@ -34,7 +34,7 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 			//Se a amostra for um Array
 			if( objAmostra instanceof Array )
 			{
-				throw Error(`Impossivel determinar nomes dos campos em um array sem que eles sejam informados!. Atribua 'campos' ao seu config. `);
+				console.info(`Determinando nomes dos campos em um array sem que eles sejam informados!. Atribuindo 'campos' ao config automaticamente. `);
 
 			//Se a amostra for um JSON
 			}else if( !(objAmostra instanceof Array) && typeof objAmostra == 'object')
