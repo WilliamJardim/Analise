@@ -2533,5 +2533,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 		}
 	}
 
+	// Adiciona este DataStructure criado na lista de memória Painel, para permitir ser controlado e monitorado via Painel
+	Analise.Painel.memoria.push(context);
+
     return context;
 }

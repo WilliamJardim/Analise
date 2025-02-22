@@ -18,6 +18,12 @@ Analise.libs = {
 Analise.Base = function( config, parametrosAdicionais={} ){
     const context = Vectorization.Matrix(config, parametrosAdicionais);
 
+    /** 
+    * Usa o método getTime do objeto Date do Javascript para obter os milisegundos do momento atual da criação do objeto Base, 
+    * para mostrar em que momento este objeto Base foi criado. Isso pode ser usado no DataStructure
+    */
+    context._criado = new Date().getTime();
+
     /**
     * Copia parametros para dentro da instancia desse objeto 
     * @param {JSON} parametros 
