@@ -9,6 +9,7 @@
 Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
 	let parametrosAdicionais = {
+		nome: config.nome || '',
 		flexibilidade: config.flexibilidade || null
 	};
 
@@ -193,6 +194,8 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 
     const context = Analise.Base(dadosIniciais_tratados, parametrosAdicionais);
 	
+	context.nome = parametrosAdicionais.nome;
+
 	context.idObjeto = new Date().getTime();
 
 	context.tipoDadosIniciais = tipoDadosIniciais;
