@@ -68,13 +68,17 @@ Analise.Painel = function(){
 
         for( let i = 0 ; i < idsMemoria.length ; i++ )
         {
-            const idInstancia            = idsMemoria[i];
-            const instanciaDataStructure = memoria[ idInstancia ];
+            const idInstancia             = idsMemoria[i];
+            const instanciaDataStructure  = memoria[ idInstancia ];
+            const nomeInstancia           = instanciaDataStructure.nome;
 
             //Se ele é um objeto do Analise
             if( instanciaDataStructure.objectName )
             {
-                tabelaDataStructures.push([idInstancia]);
+                tabelaDataStructures.push( 
+                    nomeInstancia ? [idInstancia, nomeInstancia] 
+                                  : [idInstancia]
+                );
             }
         }
 
