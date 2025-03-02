@@ -985,6 +985,53 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Verifica se um JSON exato existe dentro deste DataStructure
+	* Ou seja, procura uma amostra dentro deste DataStructure que seja exatamente igual ao JSON passado
+	* @param {JSON} dadosAmostra 
+	* @returns {Object}
+	*/
+	context.existeJSON = function( dadosAmostra={} ){
+		let nomesCamposDadosAmostra = Object.keys( dadosAmostra );
+		let encontrado       = false;
+		let indiceEncontrado = 0;
+		let linhaEncontrado  = null;
+
+		for( let i = 0 ; i < context.linhas ; i++ )
+		{
+			const indiceLinha = i;
+			const linha       = context.getLinha(i);
+
+			// Para cada campo do dadosAmostra, verifica se o valor dele é igual ao da amostra atual "i"
+			let iguais = 0;
+			
+			(nomesCamposDadosAmostra)
+			.forEach(function( nomeCampo ){
+
+				if( linha.getCampo(nomeCampo).raw() == dadosAmostra[nomeCampo] ){
+					iguais++;
+				}
+
+			});
+
+			// Se todos os valores são iguais
+			if( nomesCamposDadosAmostra.length == iguais )
+			{
+				encontrado = true;
+				indiceEncontrado = i;
+				linhaEncontrado = linha;
+				break;
+			}
+		}
+
+		return { 
+			encontrado       : encontrado, 
+			indiceEncontrado : indiceEncontrado,
+			amostra          : linhaEncontrado,
+			campos           : nomesCamposDadosAmostra
+		};
+	}
+
+	/**
 	* Obtém o indice de um campo nomeCampo
 	*/
 	context.getIndiceCampo = function( nomeCampo ){
