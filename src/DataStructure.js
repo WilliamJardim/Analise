@@ -1032,6 +1032,29 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Verifica se um Array exato existe dentro deste DataStructure
+	* Ou seja, procura uma amostra dentro deste DataStructure que seja exatamente igual ao Array passado
+	* Em outras palavras, é a mesma coisa que o "existeJSON" só que para Array
+	* @param {JSON} arrayAmostra 
+	* @returns {Object}	
+	*/	
+	context.existeArray = function( arrayAmostra ){
+		const nomeCamposDataStructure = context.nomesCampos;
+		const JSONAmostra = {};
+
+		if( arrayAmostra.length != nomeCamposDataStructure.length ){
+			throw Error(`Voce precisa passar todos os campos!. Precisa ter esses campos: ${nomeCamposDataStructure}`);
+		}
+
+		nomeCamposDataStructure.forEach(function( nomeCampo ){
+			const indiceCampo = context.mapaCampos[ nomeCampo ];
+			JSONAmostra[ nomeCampo ] = arrayAmostra[indiceCampo];
+		});
+
+		return context.existeJSON(JSONAmostra);
+	}
+
+	/**
 	* Obtém o indice de um campo nomeCampo
 	*/
 	context.getIndiceCampo = function( nomeCampo ){
