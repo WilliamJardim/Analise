@@ -1055,6 +1055,25 @@ Analise.DataStructure = function( dadosIniciais=[] , config={} ){
 	}
 
 	/**
+	* Verifica se uma amostra JSON ou ARRAY existe dentro deste DataStructure
+	* Faz uso do "existeArray" e "existeJSON"
+	* @param {Object|Array} instanciaAmostra 
+	* @returns {Object}
+	*/
+	context.existeAmostra = function(instanciaAmostra){
+		if( typeof instanciaAmostra == 'object' && !(instanciaAmostra instanceof Array) ){
+			return context.existeJSON( instanciaAmostra );
+
+		}else if( instanciaAmostra instanceof Array ){
+			return context.existeArray( instanciaAmostra );
+		
+		}else{
+			throw new Error("estrutura de amostra inesperada!");
+			
+		}
+	}
+
+	/**
 	* Obtém o indice de um campo nomeCampo
 	*/
 	context.getIndiceCampo = function( nomeCampo ){
